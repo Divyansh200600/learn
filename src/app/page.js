@@ -41,19 +41,22 @@ const Home = ({ children }) => {
   }, []);
 
   return (
-    <div className='bg-blue-200'>
-      {isLoading ? (
-        <LoadingScreen />
-      ) : (
-        <div>
-          {isPhone ? (
-            <BottomNavigationBar />
-          ) : (
-            !pathname.includes('/dashboard') && <Header />
-          )}
-          <PageTransition>{children}</PageTransition>
-        </div>
-      )}
+    // <div className='bg-blue-200'>
+    //   {isLoading ? (
+    //     <LoadingScreen />
+    //   ) : (
+    //     <div>
+    //       {isPhone ? (
+    //         <BottomNavigationBar />
+    //       ) : (
+    //         !pathname.includes('/dashboard') && <Header />
+    //       )}
+    //       <PageTransition>{children}</PageTransition>
+    //     </div>
+    //   )}
+    // </div>
+    <div>
+      <h1>404 Error</h1>
     </div>
   );
 };
