@@ -16,10 +16,9 @@ export default function RootLayout( {children}) {
     <html lang="en">
       
       <body className={inter.className} >
-        <h1 className="allign-centre text-4xl">404 Error 🚀</h1>
-        {/* <Home/>
+       <Home/>
         {/* <Herosection/> */}
-       {/* {children}  */}
+       {children} 
       </body>
     </html>
   );
