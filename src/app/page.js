@@ -55,7 +55,6 @@ const Home = ({ children }) => {
         </div>
       )}
     </div>
-   
   );
 };
 

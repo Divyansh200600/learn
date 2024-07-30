@@ -1,38 +1,37 @@
-
-import React from 'react';
-import { auth } from '../../utils/Firebase/firebaseConfig'; // Adjust path as per your project structure
+import React, { useState } from 'react';
+import { auth } from '../../utils/Firebase/firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 const Login = ({ onClose, onLogin }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const signInWithGoogle = async () => {
+    console.log("Button clicked - initiating sign-in");
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Save user data to Firestore
       await saveUserData(user);
 
-      // Callback to parent component to handle login state
       onLogin(user);
-
-      onClose(); // Close the login sidebar after successful login
+      onClose();
     } catch (error) {
       console.error('Error signing in with Google:', error);
     }
   };
 
-  // Function to save user data to Firestore
   const saveUserData = async (user) => {
-    const db = getFirestore(); // Assuming firestore is initialized correctly
+    const db = getFirestore();
     const userRef = doc(db, 'users', user.uid);
-    
+
     try {
       await setDoc(userRef, {
         name: user.displayName,
         email: user.email,
-        cuid: generateCuid(), // Generate random CUID (example function)
-        userId: user.uid
+        suid: generateCuid(),
+        uid: user.uid,
       });
       console.log('User data saved successfully');
     } catch (error) {
@@ -40,17 +39,57 @@ const Login = ({ onClose, onLogin }) => {
     }
   };
 
-  // Example function to generate random CUID (7 digits)
   const generateCuid = () => {
     return Math.floor(1000000 + Math.random() * 9000000);
   };
 
   return (
-    <div>
-      <h2>Login with Google</h2>
-      <button onClick={signInWithGoogle}>Sign in with Google</button>
+    <div >
+
+      <button
+        onClick={signInWithGoogle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          ...styles.googleButton,
+          ...(isHovered ? styles.googleButtonHover : {}),
+        }}
+      >
+        <img
+          src="https://imgs.search.brave.com/IExh49goSu_TIApc0n-MmqpBD2bQhFkhp5YOgWV3zu4/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jZG4x/Lmljb25maW5kZXIu/Y29tL2RhdGEvaWNv/bnMvZ29vZ2xlLXMt/bG9nby8xNTAvR29v/Z2xlX0ljb25zLTA5/LTEyOC5wbmc"
+          alt="Google logo"
+          style={styles.googleIcon}
+        />
+        Sign in with Google
+      </button>
     </div>
   );
+};
+
+const styles = {
+  googleButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px 20px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    color: '#000000',
+    backgroundColor: '#87ceeb',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer', 
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+    transition: 'background-color 0.3s ease',
+  },
+  googleButtonHover: {
+    backgroundColor: '#800080',
+  },
+  googleIcon: {
+    width: '20px',
+    height: '20px',
+    marginRight: '10px',
+  },
 };
 
 export default Login;

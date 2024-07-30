@@ -170,7 +170,7 @@ export default function CourseDesktopScreen({ params }) {
           {!isPurchased && activeSale && (
             <div className="bg-yellow-200 p-4 mb-4 rounded-lg shadow-md animate-bounce">
               <p className="text-lg font-semibold text-yellow-700">
-               🎉 Limited Time Offer! Get {discount}% off! Ends in {timeLeft} 🎉
+            Limited Time Offer! Get {discount}% off! Ends in {timeLeft}
               </p>
             </div>
           )}

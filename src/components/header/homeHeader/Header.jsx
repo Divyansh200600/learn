@@ -1,13 +1,14 @@
 'use client'
 
-import { doc, getDoc, getFirestore } from 'firebase/firestore'; // Ensure you have firebase/firestore installed
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { HiX } from 'react-icons/hi';
-import Logo from '../../../assets/image/logo.png';
-import Login from '../../../components/courseComponents/login/page';
-import { auth } from '../../../utils/Firebase/firebaseConfig'; // Adjust path as per your project structure
+import React, { useState, useEffect } from 'react'
+import { doc, getDoc, getFirestore } from 'firebase/firestore'
+import Image from 'next/image'
+import Link from 'next/link'
+import { HiX } from 'react-icons/hi'
+import Logo from '../../../assets/image/logo.png'
+import Login from '../../../components/courseComponents/login/page'
+import { auth } from '../../../utils/Firebase/firebaseConfig'
+import GoogleLogin from '../../../app/Auth/login'
 
 const db = getFirestore(); // Initialize Firestore
 
@@ -43,13 +44,14 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-black text-white-800 shadow-md relative">
+    <header className="bg-black text-white shadow-md relative">
       <div className="container mx-auto flex justify-between items-center px-4 py-3 md:py-4">
-        <div className="text-2xl font-extrabold">
+        <div className="text-2xl font-extrabold flex items-center space-x-2">
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <Image src={Logo} alt="Company Logo" className="h-10 mr-2" width={40} height={40} />
-              <span className="text-white-400">PulseZest-Learning</span>
+              <Image src={Logo} alt="Company Logo" className="h-10 mr-2" width={40}
+    height={40} />
+              <span className="text-white">PulseZest-Learning</span>
             </div>
           </Link>
         </div>
@@ -61,30 +63,15 @@ const Header = () => {
           <NavLink href="/server">Server</NavLink>
           <NavLink href="/bootcamp">Bootcamp</NavLink>
           <NavLink href="/contact">Contact</NavLink>
-          
-          {/* Conditional rendering based on user state */}
+
           {user ? (
             <div className="relative">
               <Link href={`/dashboard/my-course`}>
-                <p className="glitch-button"
-                  style={{
-                    padding: '15px 25px',
-                    borderRadius: '15px',
-                    border: '2px solid #FFFFFF',
-                    color: '#FFFFFF',
-                    fontWeight: 'bold',
-                    fontSize: '18px',
-                    overflow: 'hidden',
-                    transition: 'background-color 0.3s ease, color 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = '#001d3d';
-                    e.target.style.color = '#FFFFFF';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = '#FFFFFF';
-                  }}
+                <p
+                  className="glitch-button"
+                  style={buttonStyles}
+                  onMouseEnter={(e) => handleMouseEnter(e)}
+                  onMouseLeave={(e) => handleMouseLeave(e)}
                 >
                   Dashboard
                 </p>
@@ -95,31 +82,20 @@ const Header = () => {
               <button
                 onClick={() => setIsLoginOpen(true)}
                 className="glitch-button"
-                style={{
-                  padding: '15px 25px',
-                  borderRadius: '15px',
-                  border: '2px solid #001524',
-                  color: '#FFFFFF',
-                  fontWeight: 'bold',
-                  fontSize: '18px',
-                  overflow: 'hidden',
-                  transition: 'background-color 0.3s ease, color 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#FFFFFF';
-                  e.target.style.color = '#001524';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#FFFFFF';
-                }}
+                style={buttonStyles}
+                onMouseEnter={(e) => handleMouseEnter(e)}
+                onMouseLeave={(e) => handleMouseLeave(e)}
               >
                 Login
               </button>
               {isLoginOpen && (
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-end">
-                  <div className="bg-white w-80 h-full shadow-md">
-                    <div className="flex justify-end p-4">
+                  <div className="bg-white w-full max-w-sm h-full shadow-md relative">
+                    <div className="flex justify-between items-center p-4">
+                      <div className="flex items-center">
+                        <Image src={Logo} alt="Company Logo" className="h-8 mr-2" width={32} height={32} />
+                        <span className="text-blue-400 text-2xl font-extrabold">PulseZest-Learning</span>
+                      </div>
                       <button
                         onClick={() => setIsLoginOpen(false)}
                         className="text-gray-600 hover:text-gray-800 transition duration-300 ease-in-out"
@@ -128,13 +104,8 @@ const Header = () => {
                       </button>
                     </div>
                     <div className="p-8">
-                      <div className="flex items-center mb-6">
-                        <Image src={Logo} alt="Company Logo" className="h-8 mr-2" width={32} height={32} />
-                        <span className="text-blue-400 text-2xl font-extrabold">PulseZest-Learning</span>
-                      </div>
-                      <div className="w-100">
-                        <Login onLogin={handleLogin} />
-                      </div>
+                      <GoogleLogin />
+                      <Login onLogin={handleLogin} />
                     </div>
                   </div>
                 </div>
@@ -147,14 +118,33 @@ const Header = () => {
   );
 };
 
-const NavLink = ({ href, children }) => {
-  return (
-    <Link href={href}>
-      <p className="text-white-800 hover:text-blue-900 hover:border-b-2 border-transparent md:border-blue-400 transition duration-300 ease-in-out">
-        {children}
-      </p>
-    </Link>
-  );
+const buttonStyles = {
+  padding: '15px 25px',
+  borderRadius: '15px',
+  border: '2px solid #001524',
+  color: '#FFFFFF',
+  fontWeight: 'bold',
+  fontSize: '18px',
+  overflow: 'hidden',
+  transition: 'background-color 0.3s ease, color 0.3s ease',
 };
+
+const handleMouseEnter = (e) => {
+  e.target.style.backgroundColor = '#FFFFFF';
+  e.target.style.color = '#001524';
+};
+
+const handleMouseLeave = (e) => {
+  e.target.style.backgroundColor = 'transparent';
+  e.target.style.color = '#FFFFFF';
+};
+
+const NavLink = ({ href, children }) => (
+  <Link href={href}>
+    <p className="text-white hover:text-blue-900 hover:border-b-2 border-transparent md:border-blue-400 transition duration-300 ease-in-out">
+      {children}
+    </p>
+  </Link>
+);
 
 export default Header;

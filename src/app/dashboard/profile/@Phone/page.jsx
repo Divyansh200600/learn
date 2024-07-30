@@ -5,8 +5,11 @@ import { db, auth } from '../../../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import GoogleLogin from '../../../Auth/login'; 
+import Login from '../../../../components/courseComponents/login/loginforPhone';
 
 export default function PhoneProfileScreen() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('John Doe');
   const [email, setEmail] = useState('example@gmail.com');
   const [userDetails, setUserDetails] = useState({
@@ -19,6 +22,7 @@ export default function PhoneProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDetails, setEditedDetails] = useState(userDetails);
   const [newSkill, setNewSkill] = useState('');
+  const [loginMethod, setLoginMethod] = useState(''); // Add state to handle login method
 
   useEffect(() => {
     const fetchUserData = async (uid) => {
@@ -73,8 +77,10 @@ export default function PhoneProfileScreen() {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        setIsAuthenticated(true);
         fetchUserData(user.uid);
       } else {
+        setIsAuthenticated(false);
         setUsername('John Doe');
       }
     });
@@ -151,6 +157,34 @@ export default function PhoneProfileScreen() {
       return { ...prevDetails, skills: updatedSkills };
     });
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
+        {loginMethod === 'google' ? (
+          <GoogleLogin onLogin={(user) => setIsAuthenticated(!!user)} />
+        ) : loginMethod === 'email' ? (
+          <Login onLogin={(user) => setIsAuthenticated(!!user)} />
+        ) : (
+          <div className="flex flex-col items-center">
+            <button
+              className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors mb-4"
+              onClick={() => setLoginMethod('google')}
+            >
+              Login with Google
+            </button>
+            <p className="mb-2">or</p>
+            <button
+              className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => setLoginMethod('email')}
+            >
+              Login with Email
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">

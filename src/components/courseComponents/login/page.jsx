@@ -60,14 +60,14 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <Container
+      maxWidth="xs"
       style={{
-        minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
-        display: 'flex',
-        width: '120%',
+      
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '50px', // Adjust top padding to shift the login box up
+        padding: '1rem',
+        position: 'relative',
+        top: '10px',
       }}
     >
       <div
@@ -76,13 +76,15 @@ const LoginPage = ({ onLogin }) => {
           padding: '2rem',
           borderRadius: '0.5rem',
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-          maxWidth: '29rem',
-          position: 'relative',
-          width: '300px',
-          marginTop: '-220px',
+          width: '100%',
+          maxWidth: '400px', // Adjust maxWidth to ensure it scales well
+          boxSizing: 'border-box', // Ensure padding doesn't overflow
         }}
       >
-        <Typography variant="h4" style={{ fontWeight: 'bold', marginBottom: '1rem', textAlign: 'center' }}>
+        <Typography
+          variant="h4"
+          style={{ fontWeight: 'bold', marginBottom: '1rem', textAlign: 'center', color: 'black' }}
+        >
           {signupMode ? 'Sign Up' : 'Login'}
         </Typography>
         {signupMode && (

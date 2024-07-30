@@ -3,19 +3,20 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation'; // For programmatic navigation
 import { useEffect, useState } from 'react';
-import { FaBook, FaChartLine, FaCog, FaUser } from 'react-icons/fa';
+import { FaBars, FaBook, FaChartLine, FaCog, FaTimes, FaUser } from 'react-icons/fa'; // Added FaBars and FaTimes for toggle icons
 import { auth, db } from '../../utils/Firebase/firebaseConfig';
 import AchievementsPage from './achivment/page';
 import Header from './Header';
 import DesktopMyCourses from './my-course/@Desktop/page';
 import NotificationDesktopScreen from './notification/layout';
 import DekstopProfileScreen from './profile/@Desktop/page';
-import SettignDesktopPage from './setting/@Desktop/page';
+import SettignDesktopPage from './settings/@Desktop/page';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('courses');
   const [isDesktop, setIsDesktop] = useState(true);
   const [username, setUsername] = useState(''); // State to hold the username
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // State to manage sidebar open/close
   const router = useRouter(); // Initialize the router for navigation
 
   useEffect(() => {
@@ -73,6 +74,10 @@ const Dashboard = () => {
     router.push(`/dashboard/${tab.toLowerCase()}`);
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'my-course':
@@ -92,49 +97,54 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="w-1/6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col">
-        <div className="p-6 text-3xl font-extrabold">PulseZest</div>
-        <div className="user ml-4">Welcome {username}</div>
+      <div className={`bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col transition-all duration-700 ease-in-out ${isSidebarOpen ? 'w-1/6' : 'w-20'}`}>
+        <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
+          {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
+          <button onClick={toggleSidebar} className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110">
+            {isSidebarOpen ? <FaTimes /> : <FaBars />}
+          </button>
+        </div>
+        {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome {username}</div>}
         <div className="flex flex-col mt-8 space-y-4">
           <button
             onClick={() => handleTabChange('my-course')}
-            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-300 ${
-              activeTab === 'my-course' ? 'bg-indigo-400' : ''
+            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
+              activeTab === 'my-course' ? 'bg-indigo-400 shadow-lg' : ''
             }`}
           >
             <FaBook className="mr-3" />
-            Courses
+            {isSidebarOpen && 'Courses'}
           </button>
           <button
             onClick={() => handleTabChange('Achivment')}
-            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-300 ${
-              activeTab === 'Achivment' ? 'bg-indigo-400' : ''
+            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
+              activeTab === 'Achivment' ? 'bg-indigo-400 shadow-lg' : ''
             }`}
           >
             <FaChartLine className="mr-3" />
-            Achievement
+            {isSidebarOpen && 'Achievement'}
           </button>
           <button
             onClick={() => handleTabChange('Profile')}
-            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-300 ${
-              activeTab === 'Profile' ? 'bg-indigo-400' : ''
+            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
+              activeTab === 'Profile' ? 'bg-indigo-400 shadow-lg' : ''
             }`}
           >
             <FaUser className="mr-3" />
-            Profile
+            {isSidebarOpen && 'Profile'}
           </button>
           <button
             onClick={() => handleTabChange('settings')}
-            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-300 ${
-              activeTab === 'settings' ? 'bg-indigo-400' : ''
+            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
+              activeTab === 'settings' ? 'bg-indigo-400 shadow-lg' : ''
             }`}
           >
             <FaCog className="mr-3" />
-            Settings
+            {isSidebarOpen && 'Settings'}
           </button>
         </div>
       </div>
-      <div className="w-5/6">
+      <div className={`transition-all duration-700 ease-in-out ${isSidebarOpen ? 'w-5/6' : 'w-full'}`}>
         <Header setActiveTab={setActiveTab} />
         <div className="p-2 text-black">{renderContent()}</div>
       </div>
@@ -144,7 +154,7 @@ const Dashboard = () => {
 
 const Courses = () => (
   <div>
-    <h2 className="text-4xl font-extrabold mb-6">Your Courses</h2>
+    <h2 className="text-4xl font-extrabold mb-6 animate-fade-in-up">Your Courses</h2>
     {/* Add content for Courses here */}
   </div>
 );

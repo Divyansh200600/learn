@@ -156,6 +156,7 @@ export default function DekstopProfileScreen() {
     <div className="min-h-screen p-8 bg-gradient-to-br from-gray-200 to-blue-200 text-gray-800">
       <header className="flex justify-between items-center mb-8">
         <div className="flex items-center">
+          
           <Image
             src={userDetails.profilePhoto}
             alt="Profile Avatar"
@@ -172,18 +173,23 @@ export default function DekstopProfileScreen() {
             />
           )}
           <div className="ml-6">
-            <h1 className="text-4xl font-bold text-blue-600">{username}</h1>
-            {isEditing ? (
-              <input
-                type="text"
-                name="title"
-                value={editedDetails.title}
-                onChange={handleInputChange}
-                className="mt-2 text-lg font-semibold text-gray-600 border-b-2 border-gray-300 focus:outline-none"
-              />
-            ) : (
-              <p className="text-gray-600">{userDetails.title}</p>
-            )}
+          <h1 className="text-4xl font-bold text-blue-600">{username}</h1>
+{isEditing ? (
+  <input
+    type="text"
+    name="title"
+    value={editedDetails.title}
+    onChange={handleInputChange}
+    className="mt-2 w-auto text-size-3 font-semibold text-gray-600 border-b-2 border-gray-300 focus:outline-none"
+    size={Math.max(editedDetails.title.length - 5, 10)} // Decrease size slightly
+    style={{ maxWidth: '90%' }} // Limit max width to 90% of the parent
+  />
+) : (
+  <p className="mt-2 text-size-3 font-semibold text-gray-600">
+    {editedDetails.title}
+  </p>
+)}
+
           </div>
         </div>
         <div>
