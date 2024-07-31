@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     domains: [
@@ -7,6 +8,15 @@ const nextConfig = {
       '1000logos.net',
       'imgs.search.brave.com',
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/home',
+        permanent: true, // Set to false if you want a temporary redirect
+      },
+    ];
   },
 };
 

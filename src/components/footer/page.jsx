@@ -124,7 +124,7 @@ const Footer = () => {
             </a>
           </div>
           <div style={contactItemStyle}>
-            <span>Copyright © 2024 PulseZest - by PulseZest</span>
+            <span>Copyright © 2024 PulseZest - by PulseZest-Learning</span>
           </div>
           <div style={contactItemStyle}>
             <a href="mailto:info@pulsezest.com" style={{ display: 'flex', alignItems: 'center', color: '#ffffff', textDecoration: 'none' }}>

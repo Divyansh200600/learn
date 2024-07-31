@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth } from '../../utils/Firebase/firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const Login = ({ onClose, onLogin }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -27,13 +27,21 @@ const Login = ({ onClose, onLogin }) => {
     const userRef = doc(db, 'users', user.uid);
 
     try {
-      await setDoc(userRef, {
-        name: user.displayName,
-        email: user.email,
-        suid: generateCuid(),
-        uid: user.uid,
-      });
-      console.log('User data saved successfully');
+      // Check if the user document already exists
+      const docSnap = await getDoc(userRef);
+
+      if (!docSnap.exists()) {
+        // Document does not exist, create or set the document
+        await setDoc(userRef, {
+          name: user.displayName,
+          email: user.email,
+          suid: generateCuid(),
+          uid: user.uid,
+        });
+        console.log('User data saved successfully');
+      } else {
+        console.log('User data already exists');
+      }
     } catch (error) {
       console.error('Error saving user data:', error);
     }
@@ -45,7 +53,6 @@ const Login = ({ onClose, onLogin }) => {
 
   return (
     <div >
-
       <button
         onClick={signInWithGoogle}
         onMouseEnter={() => setIsHovered(true)}

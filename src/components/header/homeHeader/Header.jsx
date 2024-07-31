@@ -61,7 +61,7 @@ const Header = () => {
           <NavLink href="/web">Web</NavLink>
           <NavLink href="/android">Android</NavLink>
           <NavLink href="/server">Server</NavLink>
-          <NavLink href="/bootcamp">Bootcamp</NavLink>
+          <NavLink href="/bootcamp">Webinar</NavLink>
           <NavLink href="/contact">Contact</NavLink>
 
           {user ? (

@@ -39,15 +39,19 @@ const HeroSection = () => {
 
     const handleExploreCourses = () => {
         if (coursesRef.current) {
-            const coursesSectionTop = coursesRef.current.offsetTop - -400; // Adjusted scroll position, subtracting 50 for padding or margin
+            // Calculate the position of the courses section relative to the top of the document
+            const coursesPosition = coursesRef.current.getBoundingClientRect().top + window.scrollY;
+
+            // Scroll to the specific position (e.g., 50px from the top)
             window.scrollTo({
-                top: coursesSectionTop,
-                behavior: "smooth"
+                top: coursesPosition - 0, // Adjust the offset as needed
+                behavior: "smooth" // Smooth scrolling
             });
         }
     };
 
     return (
+        <>
         <div className="hero-section" ref={heroSectionRef}>
             <div className="ocean">
                 <div className="wave"></div>
@@ -60,6 +64,10 @@ const HeroSection = () => {
                 <div className="spider" style={spiderStyle}></div>
             </div>
         </div>
+        <div ref={coursesRef} className="courses-section">
+          {/* Content of the courses section goes here */}
+        </div>
+        </>
     );
 };
 

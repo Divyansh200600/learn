@@ -5,7 +5,7 @@ import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBMKu_qb0DMUnaetfAZFwT67XADFfmNHMw",
-    authDomain: "learning.pulsezest.com",
+    authDomain: "pulsezest.firebaseapp.com",
     databaseURL: "https://pulsezest-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "pulsezest",
     storageBucket: "pulsezest.appspot.com",

@@ -3,7 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation'; // For programmatic navigation
 import { useEffect, useState } from 'react';
-import { FaBars, FaBook, FaChartLine, FaCog, FaTimes, FaUser } from 'react-icons/fa'; // Added FaBars and FaTimes for toggle icons
+import { FaBars, FaBook, FaChartLine, FaCog, FaArrowAltCircleLeft, FaUser } from 'react-icons/fa'; // Added FaBars and FaTimes for toggle icons
 import { auth, db } from '../../utils/Firebase/firebaseConfig';
 import AchievementsPage from './achivment/page';
 import Header from './Header';
@@ -101,7 +101,7 @@ const Dashboard = () => {
         <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
           {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
           <button onClick={toggleSidebar} className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110">
-            {isSidebarOpen ? <FaTimes /> : <FaBars />}
+            {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
           </button>
         </div>
         {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome {username}</div>}

@@ -59,10 +59,13 @@ const Home = ({ children }) => {
 };
 
 const LoadingScreen = () => (
-  <div className="flex flex-col items-center justify-center h-screen bg-white">
-    <Image src={LoadingGif} alt="Loading..." className="w-32 h-32 mb-4" />
-    <p className="text-gray-800 text-lg absolute bottom-8">Love from ❤️ PulseZest</p>
+  <div className="fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-50">
+    <div className="relative text-center">
+      <Image src={LoadingGif} alt="Loading..." className="w-32 h-32 mb-4" />
+      <p className="text-gray-800 text-lg absolute top-[calc(100%-(-170px))] left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+        Love from ❤️ PulseZest
+      </p>
+    </div>
   </div>
 );
-
 export default Home;
