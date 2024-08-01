@@ -109,7 +109,7 @@ const CheckoutPage = ({ params }) => {
         const date = new Date().toISOString(); // current date
         const payMethod = "PAY_PAGE"; // example pay method
 
-        const response = await axios.post('https://phonepe.pulsezest.com/course-enroll', {
+        const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
             transactionId,
             amount,
             name,
