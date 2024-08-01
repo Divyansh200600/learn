@@ -15,7 +15,7 @@ export default function TermsAndConditions() {
             <div className="mt-6">
               <h2 className="text-xl font-semibold">1. Introduction</h2>
               <p className="mt-2 text-gray-600">
-                These Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with our website (the "Service") operated by us ("we", "us", "our").
+                These Terms and Conditions (&quot;Terms&quot;, &quot;Terms and Conditions&quot;) govern your relationship with our website (the &quot;Service&quot;) operated by us (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
               </p>
               <h2 className="text-xl font-semibold mt-4">2. Accounts</h2>
               <p className="mt-2 text-gray-600">

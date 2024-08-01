@@ -33,7 +33,7 @@ export default function About() {
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-green-800 mb-4">Join Us</h2>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Ready to embark on your learning journey with PulseZest? Explore our courses and book a one-on-one session with our expert tutors today. Together, we'll help you reach new heights of success.
+            Ready to embark on your learning journey with PulseZest? Explore our courses and book a one-on-one session with our expert tutors today. Together, we&apos;ll help you reach new heights of success.
           </p>
         </section>
       </main>
