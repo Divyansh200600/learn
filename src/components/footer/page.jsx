@@ -107,6 +107,25 @@ const Footer = () => {
               <li style={liStyle}><a href="#" style={linkStyle}>Seminar</a></li>
             </ul>
           </div>
+
+          <div style={sectionStyle}>
+            <h3 style={headingStyle}> Important Links</h3>
+            <ul style={ulStyle}>
+              <li style={liStyle}><a href="/terms-condition" style={linkStyle}>Terms and Condition</a></li>
+              <li style={liStyle}><a href="/privacy-policy" style={linkStyle}>Privacy Policy </a></li>
+              <li style={liStyle}><a href="/cancellation" style={linkStyle}>Cancellation/Refund</a></li>
+            </ul>
+          </div>
+      
+          <div style={sectionStyle}>
+            <h3 style={headingStyle}>Useful Links </h3>
+            <ul style={ulStyle}>
+              <li style={liStyle}><a href="/about-us" style={linkStyle}> About-Us</a></li>
+              <li style={liStyle}><a href="/contact-us" style={linkStyle}>Contact-Us</a></li>
+              <li style={liStyle}><a href="/pricing-details" style={linkStyle}>Pricing-Details</a></li>
+            </ul>
+          </div>
+
           <div style={sectionStyle}>
             <h3 style={headingStyle}>Community</h3>
             <ul style={ulStyle}>
@@ -115,6 +134,8 @@ const Footer = () => {
               <li style={liStyle}><a href="https://pulsezest.com/" style={linkStyle}>Website</a></li>
             </ul>
           </div>
+
+         
         </div>
         <div className="contact-info" style={contactInfoStyle}>
           <div style={contactItemStyle}>

@@ -100,95 +100,37 @@ const CheckoutPage = ({ params }) => {
 
   const handlePayment = async () => {
     try {
-      const name = userData ? userData.name : '';
-      const email = userData ? userData.email : '';
-      const phone = '';
+        const transactionId = `trans_${new Date().getTime()}`;
+        const name = userData ? userData.name : '';
+        const amount = courseData ? courseData.salePrice : 0;
+       
+        const courseId = id; // course ID
+        const currency = 'INR'; // fixed as INR for now
+        const date = new Date().toISOString(); // current date
+        const payMethod = "PAY_PAGE"; // example pay method
 
-      const response = await axios.post('https://server-api-green.vercel.app/api/createOrder', {
-        amount: courseData.salePrice * 100,
-        currency: 'INR',
-        receipt: 'receipt#1',
-        notes: { name, email, phone }
-      });
+        const response = await axios.post('https://phonepe.pulsezest.com/course-enroll', {
+            transactionId,
+            amount,
+            name,
+          
+          
+            courseId,
+            currency,
+            date,
+            payMethod
+        });
 
-      const { data } = response;
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
-        order_id: data.id,
-        name: 'PulseZest-Learning',
-        description: 'Course Payment',
-        image: 'https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/logo.png?alt=media&token=208465a0-63ae-4999-9c75-cf976af6a616',
-        handler: async (response) => {
-          console.log('Payment success:', response);
+        const { data } = response;
+        const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
 
-          setLoading(true);
-
-          // Save payment details in Firestore under user's document
-          const userCourseRef = doc(collection(db, 'users', user.uid, 'courses'), id);
-          await setDoc(userCourseRef, {
-            courseId: id,
-            amount: data.amount,
-            currency: data.currency,
-            paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            date: new Date()
-          });
-
-          const updatedDoc = await getDoc(userCourseRef);
-          const paymentDetails = updatedDoc.data();
-
-          // Generate and save invoice with payment and order IDs
-          await generateAndSaveInvoice(
-            { ...userData, uid: user.uid }, 
-            {
-              courseId: id,
-              name: courseData.name,
-              dateProcessed: new Date(),
-              amount: data.amount,
-              paymentId: paymentDetails.paymentId || '', 
-              orderId: paymentDetails.orderId || ''  
-            },
-            invoiceContainerRefs,
-            setLoading
-          );
-
-          toast.success('Payment successful! Course access granted.', { autoClose: 3000 });
-
-        },
-        prefill: {
-          name,
-          email,
-          contact: phone
-        },
-        notes: {
-          address: 'Your address'
-        },
-        theme: {
-          color: '#61dafb'
-        }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
+       
 
     } catch (error) {
-      console.error('Error initiating payment:', error);
-      toast.error('Payment failed. Please try again.', { autoClose: 3000 });
+        console.error('Error initiating payment:', error);
+        toast.error('Payment failed. Please try again.', { autoClose: 3000 });
     }
-  };
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+};
 
   const handleAgreement = () => {
     setAgreed(true);
@@ -248,27 +190,27 @@ const CheckoutPage = ({ params }) => {
             )}
           </>
         );
-        case 1:
-          return (
-            <div style={{ marginTop: '20px' }}>
-              <TermsOfService />
-              <div style={{ marginTop: '10px' }}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    onChange={handleAgreement}
-                  />
-                  <Typography variant="body2" style={{ display: 'inline', marginLeft: '8px' }}>
-                    I Understand
-                  </Typography>
-                </label>
-                <Typography variant="body1" style={{ marginBottom: '10px', fontWeight: 'bold' }}>
-              {user ? 'Please agree to the terms and conditions to proceed.' : 'Please log in to proceed.'}
-            </Typography>
-              </div>
+      case 1:
+        return (
+          <div style={{ marginTop: '20px' }}>
+            <TermsOfService />
+            <div style={{ marginTop: '10px' }}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={handleAgreement}
+                />
+                <Typography variant="body2" style={{ display: 'inline', marginLeft: '8px' }}>
+                  I Understand
+                </Typography>
+              </label>
+              <Typography variant="body1" style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+                {user ? 'Please agree to the terms and conditions to proceed.' : 'Please log in to proceed.'}
+              </Typography>
             </div>
-          );
+          </div>
+        );
       case 2:
         return (
           <>
@@ -284,10 +226,9 @@ const CheckoutPage = ({ params }) => {
 
   return (
     <div className="checkout-page" style={{ backgroundColor: '#001d3d', color: '#333333', minHeight: '100vh', padding: '20px' }}>
-      
       <div style={{ display: 'flex', justifyContent: 'space-around' }}>
         {/* Left Side - Stepper and Details */}
-        <div style={{ flex: '1 1 50%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f1faee'}}>
+        <div style={{ flex: '1 1 50%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f1faee' }}>
           <Typography variant="h4" align="center" style={{ marginBottom: '20px', color: '#001d3d' }}>
             Checkout Page
           </Typography>
@@ -316,32 +257,31 @@ const CheckoutPage = ({ params }) => {
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
-  disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
-  variant="contained"
-  color="primary"
-  onClick={handleNext}
-  style={{
-    backgroundColor: !user || (activeStep === 1 && !agreed) ? '#ddd' : '#001d3d',
-    cursor: !user || (activeStep === 1 && !agreed) ? 'not-allowed' : 'pointer'
-  }}
->
-  {activeStep === steps.length - 1 ? 'Pay Now' : 'Next'}
-</Button>
-
+              disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
+              variant="contained"
+              color="primary"
+              onClick={handleNext}
+              style={{
+                backgroundColor: !user || (activeStep === 1 && !agreed) ? '#ddd' : '#001d3d',
+                cursor: !user || (activeStep === 1 && !agreed) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {activeStep === steps.length - 1 ? 'Pay Now' : 'Next'}
+            </Button>
           </div>
         </div>
 
         {/* Right Side - Course and Student Details */}
-        <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column', gap: '20px', marginLeft:'20px' }}>
+        <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column', gap: '20px', marginLeft: '20px' }}>
           <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee' }}>
             <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814' }}>Course Details</Typography>
             {courseData ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px'}}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
                   <Image 
                     src={courseData.thumbnail} 
                     alt="Course Logo" 
-                    width= {52} height= {52}
+                    width={52} height={52}
                     style={{ marginRight: '10px', borderRadius: '50%' }} 
                   />
                   <div>
@@ -384,43 +324,6 @@ const CheckoutPage = ({ params }) => {
           )}
         </div>
       </div>
-         {/* Loader */}
-         {loading && (
-        <div 
-          style={{ position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '1000' }}
-        >
-          <div 
-            style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '4px' }}
-          >
-            <Typography 
-              variant="h6" 
-              style={{ marginBottom: '10px' }}
-            >
-              Generating Invoice...
-            </Typography>
-            <div className="loader"></div>
-          </div>
-        </div>
-      )}
-
-      {/* Invoice Template for PDF Generation */}
-      {loading && userData && courseData && (
-        <div style={{ display: 'none' }}>
-          <InvoiceTemplate 
-            userData={userData} 
-            courseData={{
-              courseId: id,
-              name: courseData.name,
-              dateProcessed: new Date(),
-              amount: courseData.salePrice * 100,
-              paymentId: '',
-              orderId: ''
-            }} 
-            setLoading={setLoading} 
-            refs={invoiceContainerRefs} 
-          />
-        </div>
-      )}
 
       {/* Toast Container */}
       <ToastContainer position="bottom-right" autoClose={3000} />

@@ -12,12 +12,12 @@ export default function CourseDesktopScreen({ params }) {
   const { id } = params; // Destructure id from params
   const [user, loading, error] = useAuthState(auth); // Fetch user state from Firebase auth
 
-  console.log(user?.uid);
 
   const [courseData, setCourseData] = useState({
     courseName: '',
     introVideo: '',
     courseLevel: '',
+    courseDuration:'',
     regularPrice: '',
     salePrice: '',
     description: '',
@@ -129,9 +129,12 @@ export default function CourseDesktopScreen({ params }) {
 
   return (
     <div className="min-h-screen bg-blue-200 pt-8 pb-16">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8">
-        <h1 className="p-6 text-3xl font-bold text-blue-600 animate-fade-in">{courseData.name}</h1>
-        <div className="relative">
+  <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8">
+    <div className="p-6 flex justify-between items-center text-blue-600 animate-fade-in">
+      <h1 className="text-3xl font-bold">{courseData.name}</h1>
+      <span className="text-xl">Coures Duration: {courseData.courseDuration}</span>
+    </div>
+    <div className="relative">
           <video
             ref={videoRef}
             src={courseData.introVideo}
@@ -176,7 +179,7 @@ export default function CourseDesktopScreen({ params }) {
           )}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-lg text-gray-800">{courseData.courseLevel}</p>
+              <p className="text-3xl font-bold text-green-600 mb-4">{courseData.courseLevel}</p>
             </div>
             <div className="text-3xl font-bold text-blue-600 mb-4">
               {regularPrice && (
@@ -234,7 +237,7 @@ export default function CourseDesktopScreen({ params }) {
               </p>
               <p className="text-lg text-gray-700">
                 <span className="font-semibold text-black">Rating:</span>{" "}
-                ⭐️⭐️⭐️⭐️½
+                ⭐️⭐️⭐️⭐️🌜
               </p>
             </div>
           </div>

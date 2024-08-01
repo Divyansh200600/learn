@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { doc, getDoc, getFirestore } from 'firebase/firestore'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -15,6 +15,9 @@ const db = getFirestore(); // Initialize Firestore
 const Header = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
+  
+  // Ref for the courses section
+  const coursesRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
@@ -43,14 +46,23 @@ const Header = () => {
     setIsLoginOpen(false);
   };
 
+  const handleScrollToCourses = () => {
+    if (coursesRef.current) {
+      const coursesPosition = coursesRef.current.offsetTop;
+      window.scrollTo({
+        top: coursesPosition - (-1850), // Adjust the offset as needed
+        behavior: 'smooth' // Smooth scrolling
+      });
+    }
+  };
+
   return (
     <header className="bg-black text-white shadow-md relative">
       <div className="container mx-auto flex justify-between items-center px-4 py-3 md:py-4">
         <div className="text-2xl font-extrabold flex items-center space-x-2">
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <Image src={Logo} alt="Company Logo" className="h-10 mr-2" width={40}
-    height={40} />
+              <Image src={Logo} alt="Company Logo" className="h-10 mr-2" width={40} height={40} />
               <span className="text-white">PulseZest-Learning</span>
             </div>
           </Link>
@@ -58,10 +70,11 @@ const Header = () => {
 
         <nav className="hidden md:flex md:items-center space-x-4">
           <NavLink href="/">Home</NavLink>
+         
           <NavLink href="/web">Web</NavLink>
           <NavLink href="/android">Android</NavLink>
           <NavLink href="/server">Server</NavLink>
-          <NavLink href="/bootcamp">Webinar</NavLink>
+          <NavLink href="#" onClick={handleScrollToCourses}>Webinar</NavLink>
           <NavLink href="/contact">Contact</NavLink>
 
           {user ? (
@@ -114,6 +127,11 @@ const Header = () => {
           )}
         </nav>
       </div>
+      
+      {/* Add this section where you want the scrolling to stop */}
+      <div ref={coursesRef} >
+        {/* Courses section content */}
+      </div>
     </header>
   );
 };
@@ -139,8 +157,8 @@ const handleMouseLeave = (e) => {
   e.target.style.color = '#FFFFFF';
 };
 
-const NavLink = ({ href, children }) => (
-  <Link href={href}>
+const NavLink = ({ href, children, onClick }) => (
+  <Link href={href} onClick={onClick}>
     <p className="text-white hover:text-blue-900 hover:border-b-2 border-transparent md:border-blue-400 transition duration-300 ease-in-out">
       {children}
     </p>

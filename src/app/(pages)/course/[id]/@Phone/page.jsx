@@ -18,6 +18,7 @@ export default function CoursePhoneScreen({ params }) {
     salePrice: '',
     description: '',
     whatYouLearn: '',
+    courseDuration:'',
     courseRequirements: '',
     instructor: '',
     duration: '',
@@ -188,14 +189,18 @@ export default function CoursePhoneScreen({ params }) {
             <div>
               <br></br>
               <br></br>
-              <p className="text-lg text-gray-600">{courseData.courseLevel}</p>
+              <p className="text-2xl font-bold text-green-600 mb-4">{courseData.courseLevel}</p>
+              
             </div>
+            
             <div className="text-3xl font-bold text-blue-600 mb-4">
               {regularPrice && (
                 <span className="line-through">₹{formatter.format(regularPrice)}</span>
               )} ₹{formatter.format(displayPrice)}
             </div>
+            
           </div>
+          <p className="text-1xl font-bold text-orange-600 mb-4">Course Duration: {courseData.courseDuration}</p>
           <div className="mb-6">
             <h3 className="text-2xl font-semibold text-blue-600 mb-2">Description</h3>
             <p className="text-lg text-gray-700">{courseData.description}</p>
@@ -225,7 +230,7 @@ export default function CoursePhoneScreen({ params }) {
               <div>
                 <p className="text-lg text-gray-700">
                   <span className="font-semibold text-black">Rating:</span>{" "}
-                  ⭐️⭐️⭐️⭐️½
+                  ⭐️⭐️⭐️⭐️🌜
                 </p>
               </div>
             </div>
