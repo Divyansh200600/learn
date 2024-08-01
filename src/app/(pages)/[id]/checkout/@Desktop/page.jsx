@@ -100,37 +100,41 @@ const CheckoutPage = ({ params }) => {
 
   const handlePayment = async () => {
     try {
-        const transactionId = `trans_${new Date().getTime()}`;
-        const name = userData ? userData.name : '';
-        const amount = courseData ? courseData.salePrice : 0;
-       
-        const courseId = id; // course ID
-        const currency = 'INR'; // fixed as INR for now
-        const date = new Date().toISOString(); // current date
-        const payMethod = "PAY_PAGE"; // example pay method
-
-        const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
-            transactionId,
-            amount,
-            name,
-          
-          
-            courseId,
-            currency,
-            date,
-            payMethod
-        });
-
-        const { data } = response;
-        const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
-
-       
-
+      const transactionId = `trans_${new Date().getTime()}`;
+      const name = userData ? userData.name : '';
+      const amount = courseData ? courseData.salePrice : 0;
+      const courseId = id; // course ID
+      const currency = 'INR'; // fixed as INR for now
+      const date = new Date().toISOString(); // current date
+      const payMethod = "PAY_PAGE"; // example pay method
+  
+      const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
+        transactionId,
+        amount,
+        name,
+        courseId,
+        currency,
+        date,
+        payMethod
+      });
+  
+      const { data } = response;
+      const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
+  
+      if (redirectUrl) {
+        // Redirect the user to the payment page
+        window.location.href = redirectUrl;
+      } else {
+        console.error('Redirect URL is missing');
+        toast.error('Failed to get redirect URL. Please try again.', { autoClose: 3000 });
+      }
+  
     } catch (error) {
-        console.error('Error initiating payment:', error);
-        toast.error('Payment failed. Please try again.', { autoClose: 3000 });
+      console.error('Error initiating payment:', error);
+      toast.error('Payment failed. Please try again.', { autoClose: 3000 });
     }
-};
+  };
+  
 
   const handleAgreement = () => {
     setAgreed(true);
