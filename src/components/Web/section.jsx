@@ -8,6 +8,8 @@ const Section = () => {
           
         <div style={{ 
             display: 'flex',
+            width:'1344px',
+
             justifyContent: 'center',
             alignItems: 'center',
             height: '100vh',

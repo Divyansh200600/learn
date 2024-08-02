@@ -6,6 +6,8 @@ import Image from 'next/image';
 const pageStyles = {
   container: {
     display: 'flex',
+    width:'1344px',
+
     flexDirection: 'column',
     alignItems: 'center',
     padding: '2rem',

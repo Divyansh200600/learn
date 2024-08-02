@@ -7,6 +7,7 @@ import { FaLock } from 'react-icons/fa'; // Changed to FaLock for a more promine
 const pageStyles = {
   container: {
     display: 'flex',
+    width:'1344px',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',

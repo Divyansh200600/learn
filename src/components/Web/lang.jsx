@@ -19,6 +19,7 @@ const Lang = () => {
         backgroundColor: '#f7f9fc',
         minHeight: '100vh',
         padding: '20px',
+        width: '1349px',
         position: 'relative',
     };
 
@@ -200,7 +201,6 @@ const Lang = () => {
                     { src: 'https://img.icons8.com/color/96/000000/react-native.png', alt: 'React.js', key: 'React', tooltip: 'React.js is a JavaScript library for building user interfaces.' },
                     { src: 'https://img.icons8.com/color/96/000000/firebase.png', alt: 'Firebase', key: 'Firebase', tooltip: 'Firebase provides backend services for web and mobile applications.' },
                     { src: 'https://img.icons8.com/color/96/000000/nodejs.png', alt: 'Node.js', key: 'Node', tooltip: 'Node.js is a runtime for executing JavaScript code server-side.' },
-                    { src: 'https://img.icons8.com/color/96/000000/android-os.png', alt: 'Android', key: 'Android', tooltip: 'Android is an operating system for mobile devices.' },
                     { src: 'https://img.icons8.com/color/96/000000/mysql.png', alt: 'MySQL', key: 'MySQL', tooltip: 'MySQL is a popular relational database management system.' },
                     { src: 'https://img.icons8.com/color/96/000000/api.png', alt: 'API', key: 'API', tooltip: 'APIs allow different software systems to communicate with each other.' }
                 ].map((icon, index) => (
