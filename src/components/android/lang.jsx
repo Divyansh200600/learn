@@ -8,7 +8,7 @@ const Lang = () => {
 
     const scrollToCodeBox = () => {
         document.querySelector('#codeBox').scrollIntoView({ behavior: 'smooth' });
-        window.location.href = '/course/xEryQeazPuZFuIXremIO'; // Replace with your desired URL
+        window.location.href = '/course/Jaf27ItydQgHxkTlNJRO'; // Replace with your desired URL
 
     };
 
@@ -49,19 +49,19 @@ const Lang = () => {
         outline: 'none', // Remove default focus outline
         transform: 'scale(1)', // Default scale
     };
-    
+
     const buttonHoverStyle = {
         background: 'linear-gradient(135deg, #2575fc 0%, #6a11cb 100%)', // Gradient inversion on hover
         boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)', // Deeper shadow on hover
         transform: 'scale(1.05)', // Slightly scale up on hover
     };
-    
+
     const buttonActiveStyle = {
         background: 'linear-gradient(135deg, #2575fc 0%, #6a11cb 100%)', // Consistent gradient on active
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Shadow adjustment on active
         transform: 'scale(0.95)', // Scale down slightly on click
     };
-    
+
 
     const tornadoContainerStyle = {
         display: 'flex',
@@ -150,59 +150,54 @@ const Lang = () => {
     };
 
     const languageCode = {
-        HTML: `<html>\n  <head>\n    <title>Document</title>\n  </head>\n  <body>\n    <h1>Hello World</h1>\n  </body>\n</html>`,
-        CSS: `body {\n  background-color: #f0f0f0;\n  font-family: Arial, sans-serif;\n}\nh1 {\n  color: #333;\n}`,
-        JavaScript: `function greet() {\n  console.log('Hello World');\n}\ngreet();`,
-        GitHub: `# GitHub\n\nGitHub is a platform for version control and collaboration.`,
-        React: `import React from 'react';\n\nfunction App() {\n  return <div>Hello, React!</div>;\n}\n\nexport default App;`,
-        Firebase: `// Firebase configuration\nconst firebaseConfig = {\n  apiKey: 'YOUR_API_KEY',\n  authDomain: 'YOUR_AUTH_DOMAIN',\n  projectId: 'YOUR_PROJECT_ID',\n  storageBucket: 'YOUR_STORAGE_BUCKET',\n  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',\n  appId: 'YOUR_APP_ID'\n};`,
-        Node: `const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.statusCode = 200;\n  res.setHeader('Content-Type', 'text/plain');\n  res.end('Hello World\\n');\n});\n\nserver.listen(3000, '127.0.0.1', () => {\n  console.log('Server running at http://127.0.0.1:3000/');\n});`,
-        Android: `// Android Activity\npublic class MainActivity extends AppCompatActivity {\n  @Override\n  protected void onCreate(Bundle savedInstanceState) {\n    super.onCreate(savedInstanceState);\n    setContentView(R.layout.activity_main);\n  }\n}`,
-        MySQL: `CREATE TABLE users (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  email VARCHAR(100) NOT NULL UNIQUE\n);`,
-        API: `// Example API call\nfetch('https://api.example.com/data')\n  .then(response => response.json())\n  .then(data => console.log(data));`,
+        Java: `// Android Activity\npublic class MainActivity extends AppCompatActivity {\n  @Override\n  protected void onCreate(Bundle savedInstanceState) {\n    super.onCreate(savedInstanceState);\n    setContentView(R.layout.activity_main);\n  }\n}`,
+        Kotlin: `// Kotlin Android Activity\nclass MainActivity : AppCompatActivity() {\n  override fun onCreate(savedInstanceState: Bundle?) {\n    super.onCreate(savedInstanceState)\n    setContentView(R.layout.activity_main)\n  }\n}`,
+        XML: `<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"\n    android:layout_width="match_parent"\n    android:layout_height="match_parent"\n    android:orientation="vertical">\n    <TextView\n        android:layout_width="wrap_content"\n        android:layout_height="wrap_content"\n        android:text="Hello World!" />\n</LinearLayout>`,
+        Retrofit: `// Retrofit Interface\ninterface ApiService {\n    @GET("users/{user}/repos")\n    suspend fun listRepos(@Path("user") user: String): List<Repo>\n}`,
+        Firebase: `// Firebase Authentication\nFirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)\n    .addOnCompleteListener(this) { task ->\n        if (task.isSuccessful) {\n            // Sign in success\n        } else {\n            // If sign in fails\n        }\n    }`,
+        Room: `@Entity\ndata class User(\n    @PrimaryKey val uid: Int,\n    @ColumnInfo(name = "first_name") val firstName: String?,\n    @ColumnInfo(name = "last_name") val lastName: String?\n)`,
+        Flutter: `// Flutter Widget\nimport 'package:flutter/material.dart';\n\nvoid main() => runApp(MaterialApp(\n  home: Scaffold(\n    body: Center(child: Text('Hello World!')),\n  ),\n));`,
+        Dart: `// Dart Example\nvoid main() {\n  print('Hello, Dart!');\n}\n`,
     };
-
+    
     const getLangClass = (lang) => {
         switch (lang) {
-            case 'HTML':
-                return 'html';
-            case 'CSS':
-                return 'css';
-            case 'JavaScript':
-                return 'javascript';
-            case 'GitHub':
-                return 'git';
-            case 'React':
-                return 'jsx';
-            case 'Firebase':
-                return 'javascript';
-            case 'Node':
-                return 'javascript';
-            case 'Android':
+            case 'Java':
                 return 'java';
-            case 'MySQL':
-                return 'sql';
-            case 'API':
-                return 'javascript';
+            case 'Kotlin':
+                return 'kotlin';
+            case 'XML':
+                return 'xml';
+            case 'Flutter':
+                return 'dart';
+            case 'Retrofit':
+                return 'kotlin';
+            case 'Dart':
+                return 'dart';
+            case 'Firebase':
+                return 'java';
+            case 'Room':
+                return 'kotlin';
             default:
                 return 'text';
         }
     };
+    
+
 
     return (
         <div style={containerStyle}>
             <h1 style={headingStyle}>Explore Languages</h1>
             <div style={tornadoContainerStyle}>
                 {[
-                    { src: 'https://img.icons8.com/color/96/000000/html-5.png', alt: 'HTML', key: 'HTML', tooltip: 'HTML is a markup language for creating web pages.' },
-                    { src: 'https://img.icons8.com/color/96/000000/css3.png', alt: 'CSS', key: 'CSS', tooltip: 'CSS is used for styling HTML elements.' },
-                    { src: 'https://img.icons8.com/color/96/000000/javascript.png', alt: 'JavaScript', key: 'JavaScript', tooltip: 'JavaScript adds interactivity to web pages.' },
-                    { src: 'https://img.icons8.com/ios-glyphs/96/000000/github.png', alt: 'GitHub', key: 'GitHub', tooltip: 'GitHub is a platform for version control and collaboration.' },
-                    { src: 'https://img.icons8.com/color/96/000000/react-native.png', alt: 'React.js', key: 'React', tooltip: 'React.js is a JavaScript library for building user interfaces.' },
-                    { src: 'https://img.icons8.com/color/96/000000/firebase.png', alt: 'Firebase', key: 'Firebase', tooltip: 'Firebase provides backend services for web and mobile applications.' },
-                    { src: 'https://img.icons8.com/color/96/000000/nodejs.png', alt: 'Node.js', key: 'Node', tooltip: 'Node.js is a runtime for executing JavaScript code server-side.' },
-                    { src: 'https://img.icons8.com/color/96/000000/mysql.png', alt: 'MySQL', key: 'MySQL', tooltip: 'MySQL is a popular relational database management system.' },
-                    { src: 'https://img.icons8.com/color/96/000000/api.png', alt: 'API', key: 'API', tooltip: 'APIs allow different software systems to communicate with each other.' }
+                    { src: 'https://img.icons8.com/color/96/000000/flutter.png', alt: 'Flutter', key: 'Flutter', tooltip: 'Flutter is an open-source UI software development toolkit created by Google.' },
+                    { src: 'https://img.icons8.com/color/96/000000/dart.png', alt: 'Dart', key: 'Dart', tooltip: 'Dart is a programming language optimized for building mobile, desktop, and server applications.' },
+                    { src: 'https://img.icons8.com/color/96/000000/java-coffee-cup-logo.png', alt: 'Java', key: 'Java', tooltip: 'Java is a primary language for Android development.' },
+                    { src: 'https://img.icons8.com/color/96/000000/kotlin.png', alt: 'Kotlin', key: 'Kotlin', tooltip: 'Kotlin is a modern, expressive language for Android development.' },
+                    { src: 'https://img.icons8.com/color/96/000000/xml-file.png', alt: 'XML', key: 'XML', tooltip: 'XML is used for designing Android UI layouts.' },
+                    { src: 'https://img.icons8.com/color/96/000000/api.png', alt: 'Retrofit', key: 'Retrofit', tooltip: 'Retrofit is used for networking in Android applications.' },
+                    { src: 'https://img.icons8.com/color/96/000000/firebase.png', alt: 'Firebase', key: 'Firebase', tooltip: 'Firebase provides backend services for Android applications.' },
+                    { src: 'https://img.icons8.com/color/96/000000/database.png', alt: 'Room', key: 'Room', tooltip: 'Room is a persistence library for Android applications.' }
                 ].map((icon, index) => (
                     <div
                         key={index}
@@ -278,23 +273,23 @@ const Lang = () => {
             </div>
             <style jsx>{tornadoEffect}</style>
             <button
-    style={buttonStyle}
-    onMouseOver={(e) => {
-        Object.assign(e.currentTarget.style, buttonHoverStyle);
-    }}
-    onMouseOut={(e) => {
-        Object.assign(e.currentTarget.style, buttonStyle);
-    }}
-    onMouseDown={(e) => {
-        Object.assign(e.currentTarget.style, buttonActiveStyle);
-    }}
-    onMouseUp={(e) => {
-        Object.assign(e.currentTarget.style, buttonHoverStyle);
-    }}
-    onClick={scrollToCodeBox}
->
-    Explore
-</button>
+                style={buttonStyle}
+                onMouseOver={(e) => {
+                    Object.assign(e.currentTarget.style, buttonHoverStyle);
+                }}
+                onMouseOut={(e) => {
+                    Object.assign(e.currentTarget.style, buttonStyle);
+                }}
+                onMouseDown={(e) => {
+                    Object.assign(e.currentTarget.style, buttonActiveStyle);
+                }}
+                onMouseUp={(e) => {
+                    Object.assign(e.currentTarget.style, buttonHoverStyle);
+                }}
+                onClick={scrollToCodeBox}
+            >
+                Explore
+            </button>
 
         </div>
     );

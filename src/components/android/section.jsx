@@ -26,7 +26,7 @@ const Section = () => {
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)' // Optional: Adds shadow for depth
             }}>
                 <ReactPlayer
-                    url="https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/divyansh-store%2Fsection.mp4?alt=media&token=a143b55e-f6d2-490e-b892-1bc3e341735d"
+                    url="https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/divyansh-store%2Fapp%20of%20learning%2FsectionAndroid.mp4?alt=media&token=570161e8-8765-41c0-add3-e39934333072"
                     playing={true}
                     controls={false}
                     width="120%"
