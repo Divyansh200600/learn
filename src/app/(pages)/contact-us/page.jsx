@@ -57,7 +57,7 @@ const ContactForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-green-800 p-6 rounded-lg">
             <Typography variant="h4" gutterBottom className="text-white mb-4">
-              Let's talk on something great together
+              Let&apos;s talk on something great together
             </Typography>
             <Box display="flex" alignItems="center" mb={2}>
               <Email className="mr-2 text-white" />
@@ -85,7 +85,7 @@ const ContactForm = () => {
           </div>
           <div className="bg-white text-black p-6 rounded-lg">
             <Typography variant="h5" gutterBottom className="mb-4">
-              I'm interested in:
+              I&apos;m interested in:
             </Typography>
             <div className="flex flex-wrap mb-4">
               {['UX/UI design', 'Web design', 'Design system', 'Graphic design', 'Other'].map(option => (
