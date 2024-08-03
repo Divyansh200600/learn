@@ -30,6 +30,9 @@ const PhoneCheckoutPage = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const { id } = params;
   const [agreed, setAgreed] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [discountedPrice, setDiscountedPrice] = useState(null);
+  const [couponError, setCouponError] = useState(null);
   const invoiceContainerRefs = useRef({});
 
   const fetchUserData = async (userId) => {
@@ -100,79 +103,30 @@ const PhoneCheckoutPage = ({ params }) => {
 
   const handlePayment = async () => {
     try {
+      const transactionId = `trans_${new Date().getTime()}`;
       const name = userData ? userData.name : '';
-      const email = userData ? userData.email : '';
-      const phone = '';
+      const amount = discountedPrice !== null ? discountedPrice : courseData.salePrice;
 
-      const response = await axios.post('https://server-api-green.vercel.app/api/createOrder', {
-        amount: courseData.salePrice * 100,
-        currency: 'INR',
-        receipt: 'receipt#1',
-        notes: { name, email, phone }
+      const courseId = id; // course ID
+      const currency = 'INR'; // fixed as INR for now
+      const date = new Date().toISOString(); // current date
+      const payMethod = "PAY_PAGE"; // example pay method
+
+      const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
+        transactionId,
+        amount,
+        name,
+        courseId,
+        currency,
+        date,
+        payMethod
       });
 
       const { data } = response;
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
-        order_id: data.id,
-        name: 'PulseZest-Learning',
-        description: 'Course Payment',
-        image: 'https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/logo.png?alt=media&token=208465a0-63ae-4999-9c75-cf976af6a616',
-        handler: async (response) => {
-          console.log('Payment success:', response);
+      const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
 
-          setLoading(true);
-
-          // Save payment details in Firestore under user's document
-          const userCourseRef = doc(collection(db, 'users', user.uid, 'courses'), id);
-          await setDoc(userCourseRef, {
-            courseId: id,
-            amount: data.amount,
-            currency: data.currency,
-            paymentId: response.razorpay_payment_id,
-            orderId: response.razorpay_order_id,
-            signature: response.razorpay_signature,
-            date: new Date()
-          });
-
-          const updatedDoc = await getDoc(userCourseRef);
-          const paymentDetails = updatedDoc.data();
-
-          // Generate and save invoice with payment and order IDs
-          await generateAndSaveInvoice(
-            { ...userData, uid: user.uid }, 
-            {
-              courseId: id,
-              name: courseData.name,
-              dateProcessed: new Date(),
-              amount: data.amount,
-              paymentId: paymentDetails.paymentId || '', 
-              orderId: paymentDetails.orderId || ''  
-            },
-            invoiceContainerRefs,
-            setLoading
-          );
-
-          toast.success('Payment successful! Course access granted.', { autoClose: 3000 });
-
-        },
-        prefill: {
-          name,
-          email,
-          contact: phone
-        },
-        notes: {
-          address: 'Your address'
-        },
-        theme: {
-          color: '#61dafb'
-        }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
+      // Redirect to payment URL
+      window.location.href = redirectUrl;
 
     } catch (error) {
       console.error('Error initiating payment:', error);
@@ -180,18 +134,45 @@ const PhoneCheckoutPage = ({ params }) => {
     }
   };
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   const handleAgreement = () => {
     setAgreed(true);
+  };
+
+  const applyCoupon = async () => {
+    console.log('Applying coupon:', couponCode);
+
+    try {
+      // Ensure course data is loaded
+      if (!courseData) {
+        setCouponError('Course data is not available.');
+        return;
+      }
+
+      // Check if the coupon code exists in the courseData
+      const couponData = courseData.couponCodes[couponCode];
+
+      if (couponData) {
+        if (couponData.status === "online") {
+          // Apply the discount
+          const discount = couponData.price;
+          const finalPrice = courseData.salePrice - discount;
+          setDiscountedPrice(finalPrice);
+          setCouponError(null);
+
+          console.log('Discount applied:', discount);
+          console.log('Final price:', finalPrice);
+        } else {
+          setCouponError('Coupon code is not valid or expired.');
+          console.log('Coupon code is not valid or expired.');
+        }
+      } else {
+        setCouponError('Invalid coupon code.');
+        console.log('Invalid coupon code or no document found for this coupon.');
+      }
+    } catch (error) {
+      console.error('Error applying coupon code:', error.message);
+      setCouponError('Failed to apply coupon. Please try again.');
+    }
   };
 
   const renderStepContent = (stepIndex) => {
@@ -199,54 +180,54 @@ const PhoneCheckoutPage = ({ params }) => {
       case 0:
         return (
           <>
-            <Typography variant="body1" style={{ marginBottom: '10px', fontWeight: 'bold'}}>
+            <Typography variant="body1" style={{ marginBottom: '10px', fontWeight: 'bold' }}>
               This is the login step where users can log in using their Google account or mobile OTP.
             </Typography>
             <Typography variant="body1" style={{ marginBottom: '10px' }}>
               {!user ? 'Please log in to proceed.' : 'You are already logged in.'}
             </Typography>
             {!user && (
-               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-               <Button
-                 variant="contained"
-                 color="primary"
-                 onClick={handleGoogleLogin}
-                 startIcon={<GoogleIcon />}
-                 style={{ backgroundColor: '#001d3d'}}
-               >
-                 Login with Google
-               </Button>
-               
-               <Typography variant="subtitle1" style={{ margin: '0 10px' }}>OR</Typography>
-               
-               <Input
-                 type="text"
-                 placeholder="Phone Number"
-                 style={{
-                   backgroundColor: '#f1f1f1',
-                   border: 'none',
-                   padding: '8px',
-                   borderRadius: '4px',
-                   width: '140px'
-                 }}
-               />
-               
-               <Input
-                 type="text"
-                 placeholder="OTP"
-                 style={{
-                   backgroundColor: '#f1f1f1',
-                   border: 'none',
-                   padding: '8px',
-                   borderRadius: '4px',
-                   width: '100px'
-                 }}
-               />
-               
-               <Button variant="contained"  style={{ backgroundColor: '#001d3d' }}>
-                 Login with OTP
-               </Button>
-             </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleGoogleLogin}
+                  startIcon={<GoogleIcon />}
+                  style={{ backgroundColor: '#001d3d' }}
+                >
+                  Login with Google
+                </Button>
+
+                <Typography variant="subtitle1" style={{ margin: '0 10px' }}>OR</Typography>
+
+                <Input
+                  type="text"
+                  placeholder="Phone Number"
+                  style={{
+                    backgroundColor: '#f1f1f1',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    width: '140px'
+                  }}
+                />
+
+                <Input
+                  type="text"
+                  placeholder="OTP"
+                  style={{
+                    backgroundColor: '#f1f1f1',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    width: '100px'
+                  }}
+                />
+
+                <Button variant="contained" style={{ backgroundColor: '#001d3d' }}>
+                  Login with OTP
+                </Button>
+              </div>
             )}
           </>
         );
@@ -277,6 +258,54 @@ const PhoneCheckoutPage = ({ params }) => {
             <Typography variant="body1" style={{ marginBottom: '10px' }}>
               This is the payment step where users can complete their payment.
             </Typography>
+            <div style={{ marginBottom: '20px', position: 'relative' }}>
+              <Input
+                type="text"
+                placeholder="Enter coupon code"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                style={{
+                  backgroundColor: '#f1f1f1',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  marginRight: '10px'
+                }}
+                disabled={discountedPrice !== null}
+              />
+              <Button variant="contained" onClick={applyCoupon} style={{ backgroundColor: '#001d3d' }} disabled={discountedPrice !== null}>
+                Apply
+              </Button>
+              {discountedPrice !== null && (
+                <Typography
+                  variant="body2"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    color: 'green',
+                    pointerEvents: 'none',
+                    opacity: 0.8
+                  }}
+                >
+                  Coupon Applied
+                </Typography>
+              )}
+            </div>
+            {couponError && (
+              <Typography variant="body2" color="error" style={{ marginBottom: '10px' }}>
+                {couponError}
+              </Typography>
+            )}
+            <Typography variant="body1" style={{ marginBottom: '10px' }}>
+              <strong>Original Price:</strong> ₹{courseData?.salePrice}
+            </Typography>
+            {discountedPrice !== null && (
+              <Typography variant="body1" style={{ marginBottom: '10px' }}>
+                <strong>Discounted Price:</strong> ₹{discountedPrice}
+              </Typography>
+            )}
           </>
         );
       default:
