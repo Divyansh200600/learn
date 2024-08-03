@@ -7,6 +7,7 @@ import { db } from '../../../utils/Firebase/firebaseConfig'; // Adjust the path 
 import { collection, addDoc } from 'firebase/firestore';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Footer from '../../../components/footer/page';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -48,6 +49,7 @@ const ContactForm = () => {
   };
 
   return (
+    <div>
     <div className="bg-green-100 text-black py-12 px-4 sm:px-6 lg:px-8">
       <ToastContainer />
       <div className="max-w-3xl mx-auto">
@@ -145,7 +147,10 @@ const ContactForm = () => {
           </div>
         </div>
       </div>
+     
     </div>
+     <Footer/>
+     </div>
   );
 };
 

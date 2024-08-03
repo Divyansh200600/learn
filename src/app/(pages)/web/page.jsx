@@ -7,7 +7,8 @@ import Roadmap from '../../../components/Web/roadmap';
 import Section from '../../../components/Web/section';
 import SectionTag from '../../../components/Web/sectionTag';
 import Lang from '../../../components/Web/lang';
-import Footer from '../../../components/Web/footer';
+import Footer1 from '../../../components/Web/footer';
+import Footer from '../../../components/footer/page';
 
 const pageStyles = {
   container: {
@@ -129,6 +130,7 @@ const Web = () => {
   }, []);
 
   return (
+    <div>
     <div style={pageStyles.container}>
       <style>{bubbleStyles}</style>
       <div className="welcome-box">
@@ -176,8 +178,10 @@ const Web = () => {
       <SectionTag />
       <Section />
       <Lang />
-      <Footer />
+      <Footer1 />
     </div>
+          <Footer/>
+</div>
   );
 };
 

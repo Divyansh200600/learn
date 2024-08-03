@@ -94,17 +94,16 @@ const Footer = () => {
           <div style={sectionStyle}>
             <h3 style={headingStyle}>Learning</h3>
             <ul style={ulStyle}>
-              <li style={liStyle}><a href="#" style={linkStyle}>Web</a></li>
-              <li style={liStyle}><a href="#" style={linkStyle}>App</a></li>
-              <li style={liStyle}><a href="#" style={linkStyle}>Server</a></li>
+              <li style={liStyle}><a href="/web" style={linkStyle}>Web</a></li>
+              <li style={liStyle}><a href="/android" style={linkStyle}>App</a></li>
+              <li style={liStyle}><a href="/server" style={linkStyle}>Server</a></li>
             </ul>
           </div>
           <div style={sectionStyle}>
             <h3 style={headingStyle}>Products</h3>
             <ul style={ulStyle}>
-              <li style={liStyle}><a href="#" style={linkStyle}>Bootcamp</a></li>
-              <li style={liStyle}><a href="#" style={linkStyle}>Webinar</a></li>
-              <li style={liStyle}><a href="#" style={linkStyle}>Seminar</a></li>
+              <li style={liStyle}><a href="/home" style={linkStyle}>Bootcamp</a></li>
+              <li style={liStyle}><a href="/home" style={linkStyle}>Webinar</a></li>
             </ul>
           </div>
 
@@ -122,7 +121,6 @@ const Footer = () => {
             <ul style={ulStyle}>
               <li style={liStyle}><a href="/about-us" style={linkStyle}> About-Us</a></li>
               <li style={liStyle}><a href="/contact-us" style={linkStyle}>Contact-Us</a></li>
-              <li style={liStyle}><a href="/pricing-details" style={linkStyle}>Pricing-Details</a></li>
             </ul>
           </div>
 
@@ -141,7 +139,8 @@ const Footer = () => {
           <div style={contactItemStyle}>
             <a href="tel:+916396219233" style={{ display: 'flex', alignItems: 'center', color: '#ffffff', textDecoration: 'none' }}>
               <Image src="https://files.codingninjas.com/phone-31845.svg" alt="Phone Icon"  width={500} height={300} style={{ width: '20px', height: '20px', marginRight: '5px' }} />
-              +91 6396219233
+              +91 6396219233 || +917248457558
+
             </a>
           </div>
           <div style={contactItemStyle}>

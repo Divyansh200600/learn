@@ -7,7 +7,8 @@ import Roadmap from '../../../components/android/roadmap';
 import Section from '../../../components/android/section';
 import SectionTag from '../../../components/android/sectionTag';
 import Lang from '../../../components/android/lang';
-import Footer from '../../../components/Web/footer';
+import Footer1 from '../../../components/Web/footer';
+import Footer from '../../../components/footer/page';
 
 const pageStyles = {
   container: {
@@ -127,6 +128,7 @@ const Android = () => {
   }, []);
 
   return (
+    <div>
     <div style={pageStyles.container}>
       <style>{bubbleStyles}</style>
       <div className="welcome-box">
@@ -174,7 +176,9 @@ const Android = () => {
       <SectionTag />
       <Section />
       <Lang />
-      <Footer />
+      <Footer1 />
+    </div>
+<Footer/>
     </div>
   );
 };

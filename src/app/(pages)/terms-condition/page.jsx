@@ -1,7 +1,8 @@
 import Head from 'next/head';
-
+import Footer from '../../../components/footer/page';
 export default function TermsAndConditions() {
   return (
+    <div>
     <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
       <Head>
         <title>Terms and Conditions</title>
@@ -41,6 +42,8 @@ export default function TermsAndConditions() {
           </div>
         </div>
       </div>
+    </div>
+<Footer/>
     </div>
   );
 }

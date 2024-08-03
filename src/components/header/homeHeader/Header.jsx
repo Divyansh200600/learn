@@ -75,7 +75,7 @@ const Header = () => {
           <NavLink href="/android">Android</NavLink>
           <NavLink href="/server">Server</NavLink>
           <NavLink href="#" onClick={handleScrollToCourses}>Webinar</NavLink>
-          <NavLink href="/contact">Contact</NavLink>
+          <NavLink href="/contact-us">Contact</NavLink>
 
           {user ? (
             <div className="relative">

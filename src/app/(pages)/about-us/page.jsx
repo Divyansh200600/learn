@@ -1,16 +1,12 @@
 import Head from 'next/head';
-
+import Footer from '../../../components/footer/page';
 export default function About() {
   return (
     <div className="min-h-screen bg-green-50">
       <Head>
         <title>About Us - PulseZest</title>
       </Head>
-      <header className="bg-green-600 text-white p-6 shadow-md">
-        <div className="container mx-auto">
-          <h1 className="text-4xl font-bold">PulseZest</h1>
-        </div>
-      </header>
+     
       <main className="container mx-auto px-4 py-12">
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-green-800 mb-4">About Us</h2>
@@ -37,11 +33,9 @@ export default function About() {
           </p>
         </section>
       </main>
-      <footer className="bg-green-600 text-white p-6 mt-auto">
-        <div className="container mx-auto text-center">
-          <p>&copy; {new Date().getFullYear()} PulseZest. All rights reserved.</p>
-        </div>
-      </footer>
+     
+     <Footer/>
     </div>
+
   );
 }

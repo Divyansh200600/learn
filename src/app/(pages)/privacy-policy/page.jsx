@@ -1,12 +1,10 @@
+import Footer from '../../../components/footer/page';
+
 export default function PrivacyPolicy() {
   return (
+    <div>
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-blue-800 text-white py-4">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold">PulseZest</h1>
-        </div>
-      </header>
+   
 
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-8">
@@ -93,12 +91,9 @@ export default function PrivacyPolicy() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-blue-800 text-white py-4">
-        <div className="container mx-auto px-4 text-center">
-          <p>&copy; {new Date().getFullYear()} PulseZest. All rights reserved.</p>
-        </div>
-      </footer>
+     
+    </div>
+<Footer/>
     </div>
   );
 }
