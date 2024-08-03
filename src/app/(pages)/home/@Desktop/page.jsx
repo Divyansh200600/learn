@@ -14,6 +14,9 @@ import BenefitsSection from '../homeFeatures/BootCamp&Webinar/features/BenefitsS
 import FacultyPage from '../homeFeatures/Faculty&Students/page';
 import StudentSection from '../homeFeatures/Faculty&Students/page2';
 import { auth } from '../../../../utils/Firebase/firebaseConfig';
+import Tag from '../homeFeatures/OurJourney/tag';
+import Tag1 from '../homeFeatures/OurJourney/tag1';
+
 
 const DesktopHomescreen = () => {
   const [loading, setLoading] = useState(true);
@@ -79,7 +82,9 @@ const DesktopHomescreen = () => {
       <FacultyPage userId={userId} />
       <StudentSection userId={userId} />
       <WhyChooseUs userId={userId} />
+      <Tag/>
       <JourneyPage userId={userId} />
+      <Tag1/>
       <FooterPage userId={userId} />
     </div>
   );
