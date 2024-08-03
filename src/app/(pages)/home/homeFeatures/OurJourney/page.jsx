@@ -10,7 +10,7 @@ const JourneyPage = () => {
           
         <div style={{ 
             display: 'flex',
-            width:'1344px',
+            width:'auto',
 
             justifyContent: 'center',
             alignItems: 'center',

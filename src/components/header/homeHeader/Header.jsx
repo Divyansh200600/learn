@@ -1,14 +1,12 @@
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
-import { doc, getDoc, getFirestore } from 'firebase/firestore'
-import Image from 'next/image'
-import Link from 'next/link'
-import { HiX } from 'react-icons/hi'
-import Logo from '../../../assets/image/logo.png'
-import Login from '../../../components/courseComponents/login/page'
-import { auth } from '../../../utils/Firebase/firebaseConfig'
-import GoogleLogin from '../../../app/Auth/login'
+import React, { useState, useEffect, useRef } from 'react';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import Image from 'next/image';
+import Link from 'next/link';
+import { HiX } from 'react-icons/hi';
+import Logo from '../../../assets/image/logo.png';
+import Login from '../../../components/courseComponents/login/page';
+import { auth } from '../../../utils/Firebase/firebaseConfig';
+import GoogleLogin from '../../../app/Auth/login';
 
 const db = getFirestore(); // Initialize Firestore
 
@@ -70,12 +68,22 @@ const Header = () => {
 
         <nav className="hidden md:flex md:items-center space-x-4">
           <NavLink href="/">Home</NavLink>
-         
           <NavLink href="/web">Web</NavLink>
           <NavLink href="/android">Android</NavLink>
           <NavLink href="/server">Server</NavLink>
           <NavLink href="#" onClick={handleScrollToCourses}>Webinar</NavLink>
           <NavLink href="/contact-us">Contact</NavLink>
+
+          {/* New Internship Button with Inline CSS */}
+          <Link href="https://pulsezest.com/internship">
+            <p
+              style={internshipButtonStyles}
+              onMouseEnter={(e) => handleMouseEnter(e)}
+              onMouseLeave={(e) => handleMouseLeave(e)}
+            >
+              Internship
+            </p>
+          </Link>
 
           {user ? (
             <div className="relative">
@@ -129,7 +137,7 @@ const Header = () => {
       </div>
       
       {/* Add this section where you want the scrolling to stop */}
-      <div ref={coursesRef} >
+      <div ref={coursesRef}>
         {/* Courses section content */}
       </div>
     </header>
@@ -147,19 +155,31 @@ const buttonStyles = {
   transition: 'background-color 0.3s ease, color 0.3s ease',
 };
 
+const internshipButtonStyles = {
+  padding: '12px 22px',
+  borderRadius: '12px',
+  border: '2px solid #ffcc00', // Highlight color
+  color: '#000', // Text color
+  backgroundColor: '#ffcc00', // Highlight background color
+  fontWeight: 'bold',
+  fontSize: '16px',
+  overflow: 'hidden',
+  transition: 'background-color 0.3s ease, color 0.3s ease',
+};
+
 const handleMouseEnter = (e) => {
-  e.target.style.backgroundColor = '#FFFFFF';
-  e.target.style.color = '#001524';
+  e.target.style.backgroundColor = '#000';
+  e.target.style.color = '#ffcc00';
 };
 
 const handleMouseLeave = (e) => {
-  e.target.style.backgroundColor = 'transparent';
-  e.target.style.color = '#FFFFFF';
+  e.target.style.backgroundColor = '#ffcc00';
+  e.target.style.color = '#000';
 };
 
-const NavLink = ({ href, children, onClick }) => (
+const NavLink = ({ href, children, onClick, className }) => (
   <Link href={href} onClick={onClick}>
-    <p className="text-white hover:text-blue-900 hover:border-b-2 border-transparent md:border-blue-400 transition duration-300 ease-in-out">
+    <p className={`text-white hover:text-blue-900 hover:border-b-2 border-transparent md:border-blue-400 transition duration-300 ease-in-out ${className}`}>
       {children}
     </p>
   </Link>

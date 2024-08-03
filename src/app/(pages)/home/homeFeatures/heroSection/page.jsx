@@ -58,7 +58,7 @@ const HeroSection = () => {
                 <div className="wave"></div>
             </div>
             <div className="content-box">
-                <h1 className="hero-title">Welcome To King Learning</h1>
+                <h1 className="hero-title">Welcome To King of Learning</h1>
                 <p className="hero-text">Ready To Dive For Explore More</p>
                 <button className="hero-button" onClick={handleExploreCourses}>Explore Courses</button>
                 <div className="spider" style={spiderStyle}></div>

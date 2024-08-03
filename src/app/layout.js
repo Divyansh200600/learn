@@ -10,18 +10,35 @@ export const metadata = {
   icon: "https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/logo.png?alt=media&token=208465a0-63ae-4999-9c75-cf976af6a616"  
 };
 
-
-export default function RootLayout( {children}) {
-
-  
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      
-      <body className={inter.className} >
-        
-        <Home/>
-        {/* <Herosection/> */}
-       {children}
+      <head>
+     
+        <title title="PulseZest Learning"></title>
+        <meta name="description" content={metadata.description} />
+        <link rel="icon" href={metadata.icon} />
+ 
+
+      </head>
+      <body className={inter.className}>
+        <Home />
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+              (function() {
+                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+                s1.async = true;
+                s1.src = 'https://embed.tawk.to/6510ab840f2b18434fda5678/1i4cnvv37';
+                s1.charset = 'UTF-8';
+                s1.setAttribute('crossorigin', '*');
+                s0.parentNode.insertBefore(s1, s0);
+              })();
+            `,
+          }}
+        />
       </body>
     </html>
   );
