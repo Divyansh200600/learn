@@ -346,16 +346,16 @@ const PhoneCheckoutPage = ({ params }) => {
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
-              disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
+              disabled={activeStep === steps.length - 1} // Disable if at the last step
               variant="contained"
               color="primary"
               onClick={handleNext}
               style={{
-                backgroundColor: !user || (activeStep === 1 && !agreed) ? '#ddd' : '#001d3d',
-                cursor: !user || (activeStep === 1 && !agreed) ? 'not-allowed' : 'pointer'
+                backgroundColor: activeStep === steps.length - 1 ? '#ddd' : '#001d3d', // Gray background if last step
+                cursor: activeStep === steps.length - 1 ? 'not-allowed' : 'pointer' // Not-allowed cursor if last step
               }}
             >
-              {activeStep === steps.length - 1 ? 'Pay Now' : 'Next'}
+              {activeStep === steps.length - 1 ? 'Coming Soon' : 'Next'} 
             </Button>
           </div>
         </div>
@@ -364,12 +364,12 @@ const PhoneCheckoutPage = ({ params }) => {
         {courseData && (
           <div style={{ flex: '1 1 100%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee', width: '100%', marginTop: '20px' }}>
             <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814', textAlign: 'center' }}>Course Details</Typography>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px'}}>
-              <Image 
-                src={courseData.thumbnail} 
-                alt="Course Logo" 
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
+              <Image
+                src={courseData.thumbnail}
+                alt="Course Logo"
                 width={52} height={52}
-                style={{ marginBottom: '10px', borderRadius: '50%' }} 
+                style={{ marginBottom: '10px', borderRadius: '50%' }}
               />
               <div>
                 <Typography variant="subtitle1" style={{ marginBottom: '5px', textAlign: 'center' }}>
@@ -409,14 +409,14 @@ const PhoneCheckoutPage = ({ params }) => {
 
       {/* Loader */}
       {loading && (
-        <div 
+        <div
           style={{ position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: '1000' }}
         >
-          <div 
+          <div
             style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '4px' }}
           >
-            <Typography 
-              variant="h6" 
+            <Typography
+              variant="h6"
               style={{ marginBottom: '10px' }}
             >
               Generating Invoice...
@@ -429,8 +429,8 @@ const PhoneCheckoutPage = ({ params }) => {
       {/* Invoice Template for PDF Generation */}
       {loading && userData && courseData && (
         <div style={{ display: 'none' }}>
-          <InvoiceTemplate 
-            userData={userData} 
+          <InvoiceTemplate
+            userData={userData}
             courseData={{
               courseId: id,
               name: courseData.name,
@@ -438,9 +438,9 @@ const PhoneCheckoutPage = ({ params }) => {
               amount: courseData.salePrice * 100,
               paymentId: '',
               orderId: ''
-            }} 
-            setLoading={setLoading} 
-            refs={invoiceContainerRefs} 
+            }}
+            setLoading={setLoading}
+            refs={invoiceContainerRefs}
           />
         </div>
       )}
