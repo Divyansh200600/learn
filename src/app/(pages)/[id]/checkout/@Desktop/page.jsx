@@ -342,17 +342,17 @@ const CheckoutPage = ({ params }) => {
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
-              disabled={true} // Always disabled
+              disabled={activeStep === steps.length - 1} // Disable only if at the last step ("Pay Now")
               variant="contained"
               color="primary"
+              onClick={handleNext}
               style={{
-                backgroundColor: '#ddd', // Gray color to indicate it's not active
-                cursor: 'not-allowed', // Pointer cursor is not allowed
+                backgroundColor: activeStep === steps.length - 1 ? '#ddd' : '#001d3d', // Gray background if "Pay Now"
+                cursor: activeStep === steps.length - 1 ? 'not-allowed' : 'pointer' // Not-allowed cursor if "Pay Now"
               }}
             >
-              Coming Soon
+              {activeStep === steps.length - 1 ? 'Pay Now' : 'Next'}
             </Button>
-
           </div>
         </div>
 
