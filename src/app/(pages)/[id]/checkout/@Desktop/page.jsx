@@ -229,7 +229,7 @@ const CheckoutPage = ({ params }) => {
         );
       case 1:
         return (
-          <div style={{ marginTop: '20px' }}>
+          <div style={{ marginTop: '30px' }}>
             <TermsOfService />
             <div style={{ marginTop: '10px' }}>
               <label>

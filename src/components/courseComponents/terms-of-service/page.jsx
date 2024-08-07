@@ -1,8 +1,7 @@
 
 const PdfViewer = () => {
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8 p-8">
+    <div>
         <div className="text-lg text-gray-700">
           {/* Placeholder for other content */}
         </div>
@@ -15,7 +14,6 @@ const PdfViewer = () => {
           />
         </div>
       </div>
-    </div>
   );
 };
 
