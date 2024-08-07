@@ -338,23 +338,24 @@ const CheckoutPage = ({ params }) => {
             {renderStepContent(activeStep)}
           </div>
 
-          {/* Navigation Buttons */}
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+         {/* Navigation Buttons */}
+         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
-              disabled={activeStep === steps.length - 1} // Disable only if at the last step ("Pay Now")
+              disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
               variant="contained"
               color="primary"
               onClick={handleNext}
               style={{
-                backgroundColor: activeStep === steps.length - 1 ? '#ddd' : '#001d3d', // Gray background if "Pay Now"
-                cursor: activeStep === steps.length - 1 ? 'not-allowed' : 'pointer' // Not-allowed cursor if "Pay Now"
+                backgroundColor: !user || (activeStep === 1 && !agreed) ? '#ddd' : '#001d3d',
+                cursor: !user || (activeStep === 1 && !agreed) ? 'not-allowed' : 'pointer'
               }}
             >
               {activeStep === steps.length - 1 ? 'Pay Now' : 'Next'}
             </Button>
           </div>
         </div>
+
 
         {/* Right Side - Course and Student Details */}
         <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column', gap: '20px', marginLeft: '20px' }}>
