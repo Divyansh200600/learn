@@ -22,7 +22,7 @@ export default function About() {
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-green-800 mb-4">Our Courses</h2>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Our courses are meticulously crafted by industry experts to ensure that learners gain practical, real-world skills. Whether you're looking to upskill, reskill, or explore a new field, PulseZest Learning provides you with the resources and guidance to succeed.
+            Our courses are meticulously crafted by industry experts to ensure that learners gain practical, real-world skills. Whether you&apos;re looking to upskill, reskill, or explore a new field, PulseZest Learning provides you with the resources and guidance to succeed.
           </p>
         </section>
 
@@ -49,9 +49,9 @@ export default function About() {
               </p>
             </div>
             <div>
-              <h3 className="text-2xl font-semibold text-green-700">Divayansh Chauhan - CTO</h3>
+              <h3 className="text-2xl font-semibold text-green-700">Divyansh Chauhan - CTO</h3>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Divyansh Chauhan, as the Chief Technology Officer, oversees the technological direction of PulseZest. His deep technical knowledge and innovative thinking are instrumental in driving the company's success and ensuring that our products remain at the cutting edge of technology.
+                Divyansh Chauhan, as the Chief Technology Officer, oversees the technological direction of PulseZest. His deep technical knowledge and innovative thinking are instrumental in driving the company&apos;s success and ensuring that our products remain at the cutting edge of technology.
               </p>
             </div>
           </div>

@@ -128,7 +128,7 @@ const Footer = () => {
             <h3 style={headingStyle}>Community</h3>
             <ul style={ulStyle}>
               <li style={liStyle}><a href="https://www.instagram.com/pulsezest/" style={linkStyle}>Instagram</a></li>
-              <li style={liStyle}><a href="https://discord.gg/9RnH5jPr" style={linkStyle}>Discord</a></li>
+              <li style={liStyle}><a href="https://discord.com/channels/1236384430688309310/1262682157990674534/1271034579158831277" style={linkStyle}>Discord</a></li>
               <li style={liStyle}><a href="https://pulsezest.com/" style={linkStyle}>Website</a></li>
             </ul>
           </div>
@@ -149,7 +149,7 @@ const Footer = () => {
           <div style={contactItemStyle}>
             <a href="mailto:info@pulsezest.com" style={{ display: 'flex', alignItems: 'center', color: '#ffffff', textDecoration: 'none' }}>
               <Image src="https://files.codingninjas.com/email-fill-31846.svg" alt="Email Icon"  width={500} height={300} style={{ width: '20px', height: '20px', marginRight: '5px' }} />
-              info@pulsezest.com
+              contact@pulsezest.com
             </a>
           </div>
         </div>

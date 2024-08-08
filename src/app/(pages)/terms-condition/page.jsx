@@ -14,7 +14,7 @@ const TermsAndConditions = () => {
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">1. Acceptance of Terms</h2>
         <p className="mb-4">
-          By accessing and using PulseZest Learning (the "Service"), you accept and agree to be bound by the terms and conditions set forth in this document (the "Agreement"). If you do not agree with these terms, please do not use the Service.
+          By accessing and using PulseZest Learning (the &quot;Service&quot;), you accept and agree to be bound by the terms and conditions set forth in this document (the &quot;Agreement&quot;). If you do not agree with these terms, please do not use the Service.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">2. Changes to Terms</h2>
