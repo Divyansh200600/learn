@@ -1,99 +1,87 @@
-import Footer from '../../../components/footer/page';
+import React from 'react';
+import Footer from '@/components/footer/page';
 
-export default function PrivacyPolicy() {
+const PrivacyPolicy = () => {
   return (
-    <div>
-    <div className="min-h-screen flex flex-col bg-gray-50">
-   
+    <>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
+      <p className="text-sm text-gray-500 mb-8">Last updated: August 08, 2024</p>
+      <p className="mb-4">
+        This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
+      </p>
+      <p className="mb-4">
+        We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. This Privacy Policy has been created with the help of the 
+        <a href="https://www.termsfeed.com/privacy-policy-generator/" target="_blank" className="text-blue-500 hover:underline">Privacy Policy Generator</a>.
+      </p>
 
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="bg-white p-6 shadow-md rounded-lg">
-          <h2 className="text-4xl font-extrabold text-gray-800 mb-6">Privacy Policy</h2>
-          <p className="text-gray-700 mb-4">
-            PulseZest (&quot;we,&quot; &quot;us,&quot; &quot;our&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our applications, including but not limited to the School Application, Teaching Application, Local Shopkeeper Application, and any other applications we may develop in the future (collectively, the &quot;Applications&quot;). Please read this Privacy Policy carefully. If you do not agree with the terms of this Privacy Policy, please do not access the Applications.
-          </p>
-          
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">1. Information We Collect</h3>
-          <p className="text-gray-700 mb-4">
-            We may collect information about you in a variety of ways. The information we may collect via the Applications includes:
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>Personal Data</strong><br />
-            While using our Applications, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you (&quot;Personal Data&quot;). Personally identifiable information may include, but is not limited to:
-            <ul className="list-disc ml-6 mt-2">
-              <li>Email address</li>
-              <li>First name and last name</li>
-              <li>Phone number</li>
-              <li>Address, State, Province, ZIP/Postal code, City</li>
-            </ul>
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>Usage Data</strong><br />
-            We may also collect information on how the Applications are accessed and used (&quot;Usage Data&quot;). Usage Data may include information such as your device&apos;s Internet Protocol address (e.g., IP address), browser type, browser version, the pages of our Applications that you visit, the time and date of your visit, the time spent on those pages, unique device identifiers, and other diagnostic data.
-          </p>
+      <h2 className="text-2xl font-semibold mt-8 mb-4">Interpretation and Definitions</h2>
 
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">2. Use of Your Information</h3>
-          <p className="text-gray-700 mb-4">
-            We use the information we collect in various ways, including to:
-            <ul className="list-disc ml-6 mt-2">
-              <li>Provide, operate, and maintain our Applications</li>
-              <li>Improve, personalize, and expand our Applications</li>
-              <li>Understand and analyze how you use our Applications</li>
-              <li>Develop new products, services, features, and functionality</li>
-              <li>Communicate with you, either directly or through one of our partners, including for customer service, to provide you with updates and other information relating to the Applications, and for marketing and promotional purposes</li>
-              <li>Process your transactions and manage your orders</li>
-              <li>Send you text messages and push notifications</li>
-              <li>Find and prevent fraud</li>
-              <li>For compliance purposes, including enforcing our Terms, or other legal rights, or as may be required by applicable laws and regulations or requested by any judicial process or governmental agency</li>
-            </ul>
-          </p>
-          
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">3. Sharing of Your Information</h3>
-          <p className="text-gray-700 mb-4">
-            We may share the information we collect about you in the following ways:
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>With Service Providers:</strong> We may share your information with third-party vendors, service providers, contractors, or agents who perform services for us or on our behalf and require access to such information to do that work. Examples include: payment processing, data analysis, email delivery, hosting services, customer service, and marketing efforts. We may allow selected third parties to use tracking technology on the Applications, which will enable them to collect data about how you interact with the Applications over time. This information may be used to, among other things, analyze and track data, determine the popularity of certain content, and better understand online activity.
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>For Business Transfers:</strong> We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>With Affiliates:</strong> We may share your information with our affiliates, in which case we will require those affiliates to honor this Privacy Policy. Affiliates include our parent company and any subsidiaries, joint venture partners, or other companies that we control or that are under common control with us.
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>With Business Partners:</strong> We may share your information with our business partners to offer you certain products, services, or promotions.
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>With Other Users:</strong> When you share personal information or otherwise interact with public areas of the Applications, such personal information may be viewed by all users and may be publicly distributed outside the Applications in perpetuity.
-          </p>
-          <p className="text-gray-700 mb-4">
-            <strong>For Legal Reasons:</strong> We may disclose your information if we are required to do so by law or if you violate our Terms of Service.
-          </p>
+      <h3 className="text-xl font-semibold mt-6 mb-4">Interpretation</h3>
+      <p className="mb-4">
+        The words of which the initial letter is capitalized have meanings defined under the following conditions. The following definitions shall have the same meaning regardless of whether they appear in singular or in plural.
+      </p>
 
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">4. Security of Your Information</h3>
-          <p className="text-gray-700 mb-4">
-            We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
-          </p>
+      <h3 className="text-xl font-semibold mt-6 mb-4">Definitions</h3>
+      <p className="mb-4">For the purposes of this Privacy Policy:</p>
+      <ul className="list-disc list-inside mb-4">
+        <li className="mb-2">
+          <strong>Account</strong> means a unique account created for You to access our Service or parts of our Service.
+        </li>
+        <li className="mb-2">
+          <strong>Affiliate</strong> means an entity that controls, is controlled by or is under common control with a party, where "control" means ownership of 50% or more of the shares, equity interest or other securities entitled to vote for election of directors or other managing authority.
+        </li>
+        <li className="mb-2">
+          <strong>Company</strong> (referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to PulseZest, 69/2, Jagatpur Road, Pashupati vihar colony, Bareilly, Uttar Pradesh, 243006.
+        </li>
+        <li className="mb-2">
+          <strong>Cookies</strong> are small files that are placed on Your computer, mobile device or any other device by a website, containing the details of Your browsing history on that website among its many uses.
+        </li>
+        <li className="mb-2">
+          <strong>Country</strong> refers to: Uttar Pradesh, India.
+        </li>
+        <li className="mb-2">
+          <strong>Device</strong> means any device that can access the Service such as a computer, a cellphone or a digital tablet.
+        </li>
+        <li className="mb-2">
+          <strong>Personal Data</strong> is any information that relates to an identified or identifiable individual.
+        </li>
+        <li className="mb-2">
+          <strong>Service</strong> refers to the Website.
+        </li>
+        <li className="mb-2">
+          <strong>Service Provider</strong> means any natural or legal person who processes the data on behalf of the Company. It refers to third-party companies or individuals employed by the Company to facilitate the Service, to provide the Service on behalf of the Company, to perform services related to the Service or to assist the Company in analyzing how the Service is used.
+        </li>
+        <li className="mb-2">
+          <strong>Third-party Social Media Service</strong> refers to any website or any social network website through which a User can log in or create an account to use the Service.
+        </li>
+        <li className="mb-2">
+          <strong>Usage Data</strong> refers to data collected automatically, either generated by the use of the Service or from the Service infrastructure itself (for example, the duration of a page visit).
+        </li>
+        <li className="mb-2">
+          <strong>Website</strong> refers to PulseZest Learning, accessible from 
+          <a href="https://learning.pulsezest.com" className="text-blue-500 hover:underline">https://learning.pulsezest.com</a>.
+        </li>
+        <li className="mb-2">
+          <strong>You</strong> means the individual accessing or using the Service, or the company, or other legal entity on behalf of which such individual is accessing or using the Service, as applicable.
+        </li>
+      </ul>
 
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">5. Changes to This Privacy Policy</h3>
-          <p className="text-gray-700 mb-4">
-            We may update this Privacy Policy from time to time in order to reflect, for example, changes to our practices or for other operational, legal, or regulatory reasons. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
-          </p>
+      {/* Add more sections of your Privacy Policy here using similar Tailwind classes */}
+      
+      <h2 className="text-2xl font-semibold mt-8 mb-4">Contact Us</h2>
+      <p className="mb-4">If you have any questions about this Privacy Policy, You can contact us:</p>
+      <ul className="list-disc list-inside mb-4">
+        <li className="mb-2">By email: contact@pulsezest.com</li>
+        <li className="mb-2">By phone number: 7248457558</li>
+        <li className="mb-2">By mail: 69/2, Jagatpur Road, Pashupati vihar colony, Bareilly, Uttar Pradesh, 243006</li>
+      </ul>
 
-          <h3 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">6. Contact Us</h3>
-          <p className="text-gray-700 mb-4">
-            If you have any questions about this Privacy Policy, please contact us at:
-            <br />
-            Email: <a href="mailto:support@pulsezest.com" className="text-blue-600 hover:underline">support@pulsezest.com</a>
-          </p>
-        </div>
-      </main>
-
-     
+      
     </div>
-<Footer/>
-    </div>
+    <Footer/>
+    </>
   );
-}
+};
+
+export default PrivacyPolicy;

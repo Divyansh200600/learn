@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'; // For programmatic navigation
 import { useEffect, useState } from 'react';
 import { FaBars, FaBook, FaChartLine, FaCog, FaArrowAltCircleLeft, FaUser } from 'react-icons/fa'; // Added FaBars and FaTimes for toggle icons
 import { auth, db } from '../../utils/Firebase/firebaseConfig';
-import AchievementsPage from './achivment/page';
+import AchievementsPage from './achivment/layout';
 import Header from './Header';
 import DesktopMyCourses from './my-course/@Desktop/page';
 import NotificationDesktopScreen from './notification/layout';

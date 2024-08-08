@@ -7,11 +7,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth'; // Firebase auth hook
 import { auth, db } from '../../../../../utils/Firebase/firebaseConfig'; // Adjust path as per your project
 import fetchCourseData from '../Function/fetchCourseData';
+import { FaChevronDown, FaVideo } from 'react-icons/fa';
 
 export default function CourseDesktopScreen({ params }) {
   const { id } = params; // Destructure id from params
   const [user, loading, error] = useAuthState(auth); // Fetch user state from Firebase auth
-
 
   const [courseData, setCourseData] = useState({
     courseName: '',
@@ -28,10 +28,12 @@ export default function CourseDesktopScreen({ params }) {
     language: '',
     rating: '',
     sales: [],
+    chapters: [] // Add this to handle the syllabus chapters
   });
 
   const [isPurchased, setIsPurchased] = useState(false); // State to check if the course is purchased
   const [timeLeft, setTimeLeft] = useState(''); // State for the countdown timer
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
 
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -123,18 +125,26 @@ export default function CourseDesktopScreen({ params }) {
     }
   };
 
+  const openSyllabusModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeSyllabusModal = () => {
+    setIsModalOpen(false);
+  };
+
   if (loading) {
     return <div>Loading...</div>; // Show loading state while user authentication is in progress
   }
 
   return (
     <div className="min-h-screen bg-blue-200 pt-8 pb-16">
-  <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8">
-    <div className="p-6 flex justify-between items-center text-blue-600 animate-fade-in">
-      <h1 className="text-3xl font-bold">{courseData.name}</h1>
-      <span className="text-xl">Coures Duration: {courseData.courseDuration}</span>
-    </div>
-    <div className="relative">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-8">
+        <div className="p-6 flex justify-between items-center text-blue-600 animate-fade-in">
+          <h1 className="text-3xl font-bold">{courseData.name}</h1>
+          <span className="text-xl">Coures Duration: {courseData.courseDuration}</span>
+        </div>
+        <div className="relative">
           <video
             ref={videoRef}
             src={courseData.introVideo}
@@ -173,7 +183,7 @@ export default function CourseDesktopScreen({ params }) {
           {!isPurchased && activeSale && (
             <div className="bg-yellow-200 p-4 mb-4 rounded-lg shadow-md animate-bounce">
               <p className="text-lg font-semibold text-yellow-700">
-            Limited Time Offer! Get {discount}% off! Ends in {timeLeft}
+                Limited Time Offer! Get {discount}% off! Ends in {timeLeft}
               </p>
             </div>
           )}
@@ -241,8 +251,30 @@ export default function CourseDesktopScreen({ params }) {
               </p>
             </div>
           </div>
+          <div className="flex justify-between items-center">
+            <button onClick={openSyllabusModal} className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors">
+              View Syllabus
+            </button>
+          </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+            <h3 className="text-2xl font-bold mb-4">Syllabus</h3>
+            <button onClick={closeSyllabusModal} className="absolute top-4 right-4 text-xl font-bold">
+              &times;
+            </button>
+            <ul className="list-disc pl-5 space-y-2">
+              {courseData.chapters.map((chapter, index) => (
+                <li key={index} className="text-lg text-gray-700">
+                  {chapter}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
