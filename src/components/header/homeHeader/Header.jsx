@@ -44,15 +44,7 @@ const Header = () => {
     setIsLoginOpen(false);
   };
 
-  const handleScrollToCourses = () => {
-    if (coursesRef.current) {
-      const coursesPosition = coursesRef.current.offsetTop;
-      window.scrollTo({
-        top: coursesPosition - (-1850), // Adjust the offset as needed
-        behavior: 'smooth' // Smooth scrolling
-      });
-    }
-  };
+
 
   return (
     <header className="bg-black text-white shadow-md relative">
@@ -71,7 +63,7 @@ const Header = () => {
           <NavLink href="/web">Web</NavLink>
           <NavLink href="/android">Android</NavLink>
           <NavLink href="/server">Server</NavLink>
-          <NavLink href="#" onClick={handleScrollToCourses}>Webinar</NavLink>
+          <NavLink href="/webinar" >Webinar</NavLink>
           <NavLink href="/contact-us">Contact</NavLink>
 
           {/* New Internship Button with Inline CSS */}
@@ -136,10 +128,8 @@ const Header = () => {
         </nav>
       </div>
       
-      {/* Add this section where you want the scrolling to stop */}
-      <div ref={coursesRef}>
-        {/* Courses section content */}
-      </div>
+    
+   
     </header>
   );
 };

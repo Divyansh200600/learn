@@ -1,4 +1,5 @@
-// Custom styles for glowing text
+
+
 const glowingTextStyle = {
   color: '#1F2937', // Darker shade for better contrast
   fontWeight: 'bold',
@@ -103,7 +104,7 @@ const CoursePage = () => {
       <div style={progressBarContainerStyle}>
         <p style={{ color: '#ffffff', marginBottom: '30px', display: 'flex', alignItems: 'center' }}>
           <img 
-            src="1.png" 
+            src="https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/logo.png?alt=media&token=208465a0-63ae-4999-9c75-cf976af6a616" 
             style={{ height: '2em', width: '2em', marginRight: '0.5em', color: 'white' }} 
             alt="PulseZest logo" 
           /> 

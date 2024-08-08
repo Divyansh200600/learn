@@ -17,7 +17,7 @@ const SidebarContainer = styled.div`
   flex-direction: column;
   position: absolute;
   left: 50px;
-  bottom: -1750px;
+  bottom: -1950px;
   background-color: #1a1a1a;
   padding: 20px;
   border-radius: 10px;

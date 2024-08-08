@@ -84,12 +84,19 @@ module.exports = {
             transform: "translate(-50%, -50%) scale(0.9)",
           },
         },
+        // Added grid animation and keyframes
+        grid: {
+          "0%": { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         orbit: "orbit calc(var(--duration)*1s) linear infinite",
         ripple: "ripple var(--duration,2s) ease calc(var(--i, 0)*.2s) infinite",
+        // Added grid animation
+        grid: "grid 15s linear infinite",
       },
     },
   },
