@@ -110,7 +110,9 @@ const WebinarPage = () => {
             <ul className="space-y-8">
               <li className="bg-gray-800 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-bold">Introduction to [Topic]</h3>
-                <p className="text-gray-300 mt-2">A brief overview of what you'll learn in this session.</p>
+                <p className="text-gray-300 mt-2">
+  A brief overview of what you&apos;ll learn in this session.
+</p>
               </li>
               <li className="bg-gray-800 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-bold">Deep Dive into [Subtopic]</h3>
