@@ -13,6 +13,8 @@ const WhyChooseUs = () => {
       "https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/Firebase%2FFirebase%20Connection%20with%20Flutter.mp4?alt=media&token=0bd21013-6eee-4674-8967-e56fa6ad0609",
   });
 
+  const [hoveredBox, setHoveredBox] = useState(null); // State to track which box is hovered
+
   const heroSectionStyle = {
     backgroundColor: "#001219",
     minHeight: "100vh",
@@ -20,18 +22,24 @@ const WhyChooseUs = () => {
     flexDirection: "column",
     alignItems: "center",
     padding: "20px",
-    position: "relative",
+  };
+
+  const headingStyle = {
+    fontSize: "3rem",
+    color: "#fff",
+    marginBottom: "20px",
+    textAlign: "center",
   };
 
   const mainContainerStyle = {
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "space-around",
+    alignItems: "flex-start",
     maxWidth: "1200px",
+    width: "100%",
     margin: "0 auto",
-    marginTop: "40px",
-    padding: "20px",
-    position: "relative",
+    gap: "20px",
+    flexWrap: "wrap",
   };
 
   const animationOptions = {
@@ -44,16 +52,15 @@ const WhyChooseUs = () => {
   };
 
   const lottieContainerStyle = {
-    flex: 1,
+    flex: "1 1 300px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: "20px",
   };
 
   const videoCardStyle = {
-    flex: "1 1 400px",
-    maxWidth: "600px",
+    flex: "1 1 500px",
+    maxWidth: "500px",
     position: "relative",
     borderRadius: "12px",
     overflow: "hidden",
@@ -62,33 +69,13 @@ const WhyChooseUs = () => {
     border: "8px solid #ffffff", // White border
     backgroundColor: "#000", // Ensure background color is black to contrast with the border
   };
-  
-
-  const videoOverlayStyle = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3))",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    transition: "opacity 0.3s",
-    opacity: 0,
-    borderRadius: "12px", // Ensure overlay corners match the card
-  };
-  
-
-  const videoOverlayHoverStyle = {
-    opacity: 1,
-  };
 
   const boxContainerStyle = {
+    flex: "1 1 300px",
     display: "flex",
+    flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    margin: "20px 0",
     gap: "20px",
   };
 
@@ -103,7 +90,7 @@ const WhyChooseUs = () => {
     alignItems: "center",
     cursor: "pointer",
     boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-    transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+    transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
     textAlign: "center",
     fontSize: "1.2rem",
     fontWeight: "bold",
@@ -112,8 +99,8 @@ const WhyChooseUs = () => {
   };
 
   const boxHoverStyle = {
-    boxShadow: "0px 0px 20px rgba(255, 255, 255, 0.8)",
-    animation: "bubbly 1s ease-in-out infinite",
+    transform: "scale(1.05)", // Scale up on hover
+    boxShadow: "0px 8px 16px rgba(255, 255, 255, 0.4)", // Brighter shadow
   };
 
   const box1Clicked = () => {
@@ -146,14 +133,14 @@ const WhyChooseUs = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
-        style={{ fontSize: "3rem", color: "#333", marginBottom: "20px" }}
+        style={headingStyle}
       >
-        <h1 className="text-5xl mx-auto font-bold text-white mb-0 text-center">Why Choose Us</h1>
+        Why Choose Us
       </motion.h1>
 
       <div style={mainContainerStyle}>
         {/* Lottie Animation */}
-        <div style={{ ...lottieContainerStyle }}>
+        <div style={lottieContainerStyle}>
           <Lottie
             options={animationOptions}
             height={300}
@@ -163,56 +150,18 @@ const WhyChooseUs = () => {
 
         {/* Video Card */}
         <div style={videoCardStyle}>
-          <div style={{ position: "relative" }}>
-            <iframe
-              title={currentVideo.title}
-              width="100%"
-              height="250"
-              src={currentVideo.src}
-              frameBorder="0"
-              allowFullScreen
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-                position: "relative",
-                zIndex: 1,
-              }}
-            ></iframe>
-            <div
-              style={{
-                ...videoOverlayStyle,
-                opacity: 0,
-                zIndex: 2,
-                transition: "opacity 0.3s",
-              }}
-              className="video-overlay"
-            >
-              <button
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "60px",
-                  height: "60px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-                className="play-button"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  height="24"
-                  fill="white"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <iframe
+            title={currentVideo.title}
+            width="100%"
+            height="250"
+            src={currentVideo.src}
+            frameBorder="0"
+            allowFullScreen
+            style={{
+              borderRadius: "12px",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            }}
+          ></iframe>
           <div style={{ padding: "20px" }}>
             <h2 style={{ fontSize: "1.8rem", margin: "0", color: "#fff", fontWeight: "bold" }}>{currentVideo.title}</h2>
             <p style={{ fontSize: "1.2rem", margin: "5px 0 0", color: "#ccc" }}>{currentVideo.by}</p>
@@ -222,20 +171,38 @@ const WhyChooseUs = () => {
         {/* Three Rectangle Boxes */}
         <div style={boxContainerStyle}>
           <div
-            style={{ ...boxStyle, backgroundColor: "#005f73" }}
+            style={{
+              ...boxStyle,
+              ...(hoveredBox === "box1" ? boxHoverStyle : {}),
+              backgroundColor: "#005f73",
+            }}
             onClick={box1Clicked}
+            onMouseEnter={() => setHoveredBox("box1")}
+            onMouseLeave={() => setHoveredBox(null)}
           >
             24/7 Doubt Support
           </div>
           <div
-            style={{ ...boxStyle, backgroundColor: "#0a9396" }}
+            style={{
+              ...boxStyle,
+              ...(hoveredBox === "box2" ? boxHoverStyle : {}),
+              backgroundColor: "#0a9396",
+            }}
             onClick={box2Clicked}
+            onMouseEnter={() => setHoveredBox("box2")}
+            onMouseLeave={() => setHoveredBox(null)}
           >
             Live Webinar & BootCamps
           </div>
           <div
-            style={{ ...boxStyle, backgroundColor: "#94d2bd" }}
+            style={{
+              ...boxStyle,
+              ...(hoveredBox === "box3" ? boxHoverStyle : {}),
+              backgroundColor: "#94d2bd",
+            }}
             onClick={box3Clicked}
+            onMouseEnter={() => setHoveredBox("box3")}
+            onMouseLeave={() => setHoveredBox(null)}
           >
             Projects Assistance
           </div>
