@@ -145,12 +145,13 @@ const Header = () => {
 };
 
 const buttonStyles = {
-  padding: '15px 25px',
-  borderRadius: '15px',
-  border: '2px solid #001524',
-  color: '#FFFFFF',
+  padding: '12px 22px',
+  borderRadius: '12px',
+  border: '2px solid #ffcc00', // Highlight color
+  color: '#000', // Text color
+  backgroundColor: '#ffcc00', // Highlight background color
   fontWeight: 'bold',
-  fontSize: '18px',
+  fontSize: '16px',
   overflow: 'hidden',
   transition: 'background-color 0.3s ease, color 0.3s ease',
 };
