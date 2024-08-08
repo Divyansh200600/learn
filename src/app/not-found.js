@@ -14,7 +14,7 @@ const handleClick = () =>{
     <div>
     <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-gray-800 dark:bg-gray-800 md:shadow-xl">
       <span className="pointer-events-none z-10 whitespace-pre-wrap bg-gradient-to-b from-[#ffd319] via-[#ff2975] to-[#8c1eff] bg-clip-text text-center text-7xl font-bold leading-none tracking-tighter text-transparent">
-        404 Page Not Found
+        404   PAGE   NOT   FOUND
       </span>
 
       <RetroGrid />
