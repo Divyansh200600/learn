@@ -56,8 +56,47 @@ const pageStyles = {
     borderRadius: '15px',
     overflow: 'hidden',
   },
+  buttonContainer: {
+    position: 'absolute', // Position the button container absolutely
+    top: '110%', // Adjust as needed
+    left: '75%', // Adjust as needed
+    transform: 'translate(-50%, 0)', // Center the button horizontally
+    marginTop: '1rem',
+  },
+  button: {
+    padding: '12px 24px',
+    fontSize: '18px',
+    color: '#fff',
+    background: 'linear-gradient(45deg, #00FF00, #00CFFF)', // Gradient from lime green to light blue
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'transform 0.3s, box-shadow 0.3s, background 0.3s, filter 0.3s', // Add transition for filter
+    boxShadow: '0 6px 15px rgba(0, 255, 0, 0.3)', // Subtle shadow for a modern look
+    position: 'relative',
+    overflow: 'hidden',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    outline: 'none', // Remove default outline
+    filter: 'brightness(1)', // Initial brightness
+  },
+  buttonGlitzEffect: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'radial-gradient(circle, rgba(255,255,255,0.2), rgba(0,255,255,0))',
+    transition: 'opacity 0.3s',
+    opacity: 0,
+  },
+  buttonHover: {
+    filter: 'brightness(1.2)', // Brighter on hover
+    transform: 'scale(1.05)', // Slightly enlarge on hover
+    boxShadow: '0 8px 20px rgba(0, 255, 0, 0.5)', // Increase shadow on hover
+  }
 };
-
 const bubbleStyles = `
 .bubble-image {
   position: absolute;
@@ -113,6 +152,7 @@ const bubbleStyles = `
 
 const Android = () => {
   const [hoveredLetterIndex, setHoveredLetterIndex] = useState(-1);
+  const [buttonHovered, setButtonHovered] = useState(false);
 
   const welcomeMessage = 'Welcome to Android Development Course!';
   const letters = welcomeMessage.split('');
@@ -126,6 +166,11 @@ const Android = () => {
       // Client-side code here
     }
   }, []);
+
+  const handleButtonClick = () => {
+    window.location.href = '/course/Jaf27ItydQgHxkTlNJRO'; // Replace with your actual link
+  };
+
 
   return (
     <div>
@@ -171,7 +216,24 @@ const Android = () => {
             />
           </div>
         </div>
+        <div
+            style={pageStyles.buttonContainer}
+            onMouseEnter={() => setButtonHovered(true)}
+            onMouseLeave={() => setButtonHovered(false)}
+          >
+            <button
+              style={{
+                ...pageStyles.button,
+                ...(buttonHovered ? pageStyles.buttonHover : {}),
+              }}
+              onClick={handleButtonClick}
+            >
+              <div style={pageStyles.buttonGlitzEffect}></div>
+              Explore Course
+            </button>
+          </div>
       </div>
+      
       <Roadmap />
       <SectionTag />
       <Section />

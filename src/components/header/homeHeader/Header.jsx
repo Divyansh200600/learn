@@ -103,7 +103,7 @@ const Header = () => {
               <button
                 onClick={() => setIsLoginOpen(true)}
                 className="glitch-button"
-                style={buttonStyles}
+                style={internshipButtonStyles}
                 onMouseEnter={(e) => handleMouseEnter(e)}
                 onMouseLeave={(e) => handleMouseLeave(e)}
               >
