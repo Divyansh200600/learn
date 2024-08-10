@@ -103,36 +103,45 @@ const CheckoutPage = ({ params }) => {
 
   const handlePayment = async () => {
     try {
-      const transactionId = `trans_${new Date().getTime()}`;
-      const name = userData ? userData.name : '';
-      const amount = discountedPrice !== null ? discountedPrice : courseData.salePrice;
+        // Generate a unique transaction ID
+        const transactionId = `trans_${new Date().getTime()}`;
+        
+        // Capture name and amount from the UI
+        const name = userData ? userData.name : '';
+        const amount = discountedPrice !== null ? discountedPrice : courseData.salePrice;
 
-      const courseId = id; // course ID
-      const currency = 'INR'; // fixed as INR for now
-      const date = new Date().toISOString(); // current date
-      const payMethod = "PAY_PAGE"; // example pay method
+        // Additional details
+        const courseId = id; // Course ID from the UI
+        const currency = 'INR'; // Fixed as INR
+        const date = new Date().toISOString(); // Current date
+        const payMethod = "PAY_PAGE"; // Example pay method
 
-      const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
-        transactionId,
-        amount,
-        name,
-        courseId,
-        currency,
-        date,
-        payMethod
-      });
+        // Send payment details to the backend
+        const response = await axios.post('http://localhost:8000/course-enroll', {
+            transactionId,
+            amount,
+            name,
+            courseId,
+            currency,
+            date,
+            payMethod
+        });
 
-      const { data } = response;
-      const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
+        // Get the redirect URL from the response
+        const { data } = response;
+        const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
 
-      // Redirect to payment URL
-      window.location.href = redirectUrl;
+        // Redirect the user to the payment gateway
+        window.location.href = redirectUrl;
 
     } catch (error) {
-      console.error('Error initiating payment:', error);
-      toast.error('Payment failed. Please try again.', { autoClose: 3000 });
+        console.error('Error initiating payment:', error);
+        toast.error('Payment failed. Please try again.', { autoClose: 3000 });
     }
-  };
+};
+
+
+
   const handleAgreement = () => {
     setAgreed(true);
   };

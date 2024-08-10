@@ -54,20 +54,7 @@ const StudentSection = () => {
       <section style={sectionStyle}>
       <h1 className="text-5xl mx-auto font-bold text-White-900 mb-9 text-center">Love From Our Employees </h1>
         <div style={cardContainerStyle}>
-          {/* Card 1 */}
-          <div style={cardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <Image style={profileCircleStyle} src={Profile4} alt="Profile 3" width={100} height={100} />
-              <div style={{ marginLeft: '20px' }}>
-                <h3 style={{ color: '#001524', marginBottom: '5px', fontWeight: 'bold' }}>Shruti Varshney</h3>
-                <p style={{ marginBottom: '5px', color: 'black' }}>Hind Press</p>
-                <p style={{ marginBottom: '0', color: 'black' }}>Web Developer</p>
-              </div>
-            </div>
-            <p style={{ color: '#001524', lineHeight: '1.6', textAlign: 'justify' }}>
-            A web developer, building responsive and user-friendly websites. I thrive on creating seamless user experiences and enjoy tackling complex problems.
-            </p>
-          </div>
+        
 
           {/* Card 2 */}
           <div style={cardStyle}>
