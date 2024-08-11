@@ -1,462 +1,462 @@
 'use client';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { FaCheck, FaChevronDown, FaChevronUp, FaVideo } from 'react-icons/fa';
-import VanillaTilt from 'vanilla-tilt';
+
+import { useState, useEffect, useRef } from 'react';
+import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
+import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const PhoneMyCourses = () => {
     const router = useRouter();
     const [courses, setCourses] = useState([]);
-    const [categories, setCategories] = useState({});
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
-    const [selectedTopicDescription, setSelectedTopicDescription] = useState('');
     const [selectedVideoDescription, setSelectedVideoDescription] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [expandedChapters, setExpandedChapters] = useState({});
     const [expandedTopics, setExpandedTopics] = useState({});
+    const [userUid, setUserUid] = useState(null);
+    const [completedVideos, setCompletedVideos] = useState([]);
     const [videoProgress, setVideoProgress] = useState({});
-    const tiltRefs = useRef([]);
     const videoRef = useRef(null);
-    const userUid = useRef(null);
-  
-    const handleNotificationClick = () => {
-      router.push('/notifications');
-    };
-  
-    const handleBackToSelector = () => {
-      setSelectedVideo(null); // Reset selected video
-      setSelectedTopicDescription(''); // Reset description
-      setSelectedVideoDescription(null); // Reset video description
-    };
-  
+
     useEffect(() => {
-      const initializeTilt = () => {
-        if (tiltRefs.current) {
-          tiltRefs.current.forEach((el) => {
-            if (el) {
-              VanillaTilt.init(el, {
-                max: 25,
-                speed: 400,
-              });
-            }
-          });
-        }
-      };
-  
-      initializeTilt();
-      return () => {
-        if (tiltRefs.current) {
-          tiltRefs.current.forEach((el) => {
-            if (el && el.vanillaTilt) {
-              el.vanillaTilt.destroy();
-            }
-          });
-        }
-      };
-    }, [courses]);
-  
-    useEffect(() => {
-      const fetchCategories = async () => {
+        const getUserUid = () => {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    setUserUid(user.uid);
+                    fetchUserCourses(user.uid);
+                } else {
+                    setUserUid(null);
+                    setLoading(false);
+                    router.push('/login');
+                }
+            });
+        };
+        getUserUid();
+    }, [router]);
+
+    const fetchUserCourses = async (uid) => {
         try {
-          const categoriesSnapshot = await getDocs(collection(db, 'categories'));
-          const categoryData = {};
-          categoriesSnapshot.forEach((categoryDoc) => {
-            const { name, courses } = categoryDoc.data();
-            categoryData[categoryDoc.id] = { name, courses };
-          });
-          setCategories(categoryData);
-        } catch (error) {
-          console.error('Error fetching categories: ', error);
-        }
-      };
-  
-      fetchCategories();
-    }, []);
-  
-    useEffect(() => {
-      const fetchUserCourses = async (uid) => {
-        try {
-          const userCoursesRef = collection(db, 'users', uid, 'courses');
-          const userCoursesSnapshot = await getDocs(userCoursesRef);
-          const courseIds = userCoursesSnapshot.docs.map((doc) => doc.id);
-  
-          const coursePromises = courseIds.map(async (courseId) => {
-            const courseDoc = await getDoc(doc(db, 'courses', courseId));
-            const courseData = courseDoc.data();
-            const { name, description, thumbnail, chapters, courseLevel } = courseData;
-  
-            const updatedChapters = await Promise.all(
-              chapters.map(async (chapter) => {
-                const topics = await Promise.all(
-                  chapter.topics.map(async (topic) => {
-                    return {
-                      ...topic,
-                      videoLinks: topic.videoLinks || [],
-                    };
-                  })
+            const userCoursesRef = collection(db, 'users', uid, 'courses');
+            const userCoursesSnapshot = await getDocs(userCoursesRef);
+            const courseIds = userCoursesSnapshot.docs.map((doc) => doc.id);
+
+            const coursePromises = courseIds.map(async (courseId) => {
+                const courseDoc = await getDoc(doc(db, 'courses', courseId));
+                const courseData = courseDoc.data();
+                const { name, description, thumbnail, chapters, courseLevel } = courseData;
+
+                const updatedChapters = await Promise.all(
+                    chapters.map(async (chapter) => {
+                        const topics = await Promise.all(
+                            chapter.topics.map(async (topic) => ({
+                                ...topic,
+                                videoLinks: topic.videoLinks || [],
+                            }))
+                        );
+                        return { ...chapter, topics };
+                    })
                 );
-                return { ...chapter, topics };
-              })
-            );
-  
-            const videoProgressDoc = await getDoc(doc(db, 'users', userUid.current, 'courses', courseId, 'videoProgress', 'progress'));
-            const videoProgress = videoProgressDoc.exists() ? videoProgressDoc.data() : {};
-  
-            const completionPercentage = calculateCompletionPercentage(videoProgress, courseData);
-            return { id: courseDoc.id, name, description, thumbnail, chapters: updatedChapters, courseLevel, completionPercentage };
-          });
-  
-          const courseList = await Promise.all(coursePromises);
-          setCourses(courseList);
-          setLoading(false);
+
+                return {
+                    id: courseDoc.id,
+                    name,
+                    description,
+                    thumbnail,
+                    chapters: updatedChapters,
+                    courseLevel,
+                };
+            });
+
+            setCourses(await Promise.all(coursePromises));
+            setLoading(false);
         } catch (error) {
-          console.error('Error fetching courses: ', error);
-          setLoading(false);
+            console.error('Error fetching courses: ', error);
+            setLoading(false);
         }
-      };
-  
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userUid.current = user.uid;
-          fetchUserCourses(user.uid);
-        } else {
-          setCourses([]);
-          setLoading(false);
-        }
-      });
-  
-      return () => unsubscribe();
-    }, []);
-  
-    const calculateCompletionPercentage = (videoProgress, course) => {
-      let totalVideos = 0;
-      let completedVideos = 0;
-  
-      course.chapters.forEach((chapter) => {
-        chapter.topics.forEach((topic) => {
-          totalVideos += topic.videoLinks.length;
-          topic.videoLinks.forEach((videoLink) => {
-            if (videoProgress && videoProgress.completed && videoProgress.completed[videoLink.link]) {
-              completedVideos++;
+    };
+
+    const fetchCourseData = async (courseId) => {
+        try {
+            const courseDoc = await getDoc(doc(db, 'courses', courseId));
+            if (!courseDoc.exists()) {
+                setError('Course not found');
+                setLoading(false);
+                return;
             }
-          });
-        });
-      });
-  
-      return totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0;
-    };
-  
-    const fetchVideoProgress = async (courseId) => {
-      try {
-        const videoProgressDoc = await getDoc(doc(db, 'users', userUid.current, 'courses', courseId, 'videoProgress', 'progress'));
-        if (videoProgressDoc.exists()) {
-          setVideoProgress(videoProgressDoc.data());
-        } else {
-          setVideoProgress({});
-        }
-      } catch (error) {
-        console.error('Error fetching video progress: ', error);
-      }
-    };
-  
-    const saveVideoProgress = async (courseId, videoLink, progress) => {
-      if (videoProgress[videoLink] === 100) return;
-      try {
-        const videoProgressRef = doc(db, 'users', userUid.current, 'courses', courseId, 'videoProgress', 'progress');
-        await setDoc(videoProgressRef, {
-          ...videoProgress,
-          [videoLink]: progress,
-          completed: {
-            ...videoProgress.completed,
-            [videoLink]: progress === 100 ? true : videoProgress.completed ? videoProgress.completed[videoLink] : false,
-          },
-          lastWatched: videoLink,
-        });
-        setVideoProgress((prevState) => ({
-          ...prevState,
-          [videoLink]: progress,
-          completed: {
-            ...prevState.completed,
-            [videoLink]: progress === 100,
-          },
-          lastWatched: videoLink,
-        }));
-      } catch (error) {
-        console.error('Error saving video progress: ', error);
-      }
-    };
-  
-    const handlePause = () => {
-      const currentTime = videoRef.current.currentTime;
-      const duration = videoRef.current.duration;
-      const progress = (currentTime / duration) * 100;
-      saveVideoProgress(selectedCourse.id, selectedVideo, progress);
-    };
-  
-    const handleEnded = async () => {
-      const currentChapter = selectedCourse.chapters.find((chapter) => chapter.topics.some((topic) => topic.videoLinks.some((link) => link.link === selectedVideo)));
-      const currentTopic = currentChapter.topics.find((topic) => topic.videoLinks.some((link) => link.link === selectedVideo));
-      const videoIndex = currentTopic.videoLinks.findIndex((link) => link.link === selectedVideo);
-  
-      await saveVideoProgress(selectedCourse.id, selectedVideo, 100);
-  
-      if (videoIndex < currentTopic.videoLinks.length - 1) {
-        setSelectedVideo(currentTopic.videoLinks[videoIndex + 1].link);
-      } else {
-        const topicIndex = currentChapter.topics.findIndex((topic) => topic === currentTopic);
-        const chapterIndex = selectedCourse.chapters.findIndex((chapter) => chapter === currentChapter);
-  
-        if (topicIndex < currentChapter.topics.length - 1) {
-          setSelectedVideo(currentChapter.topics[topicIndex + 1].videoLinks[0].link);
-        } else if (chapterIndex < selectedCourse.chapters.length - 1) {
-          setSelectedVideo(selectedCourse.chapters[chapterIndex + 1].topics[0].videoLinks[0].link);
-        } else {
-          setSelectedVideo(null);
-        }
-      }
-    };
-  
-    const handleCourseClick = async (course) => {
-      setSelectedCourse(course);
-      setSelectedTopicDescription('');
-      setSelectedVideoDescription('');
-      await fetchVideoProgress(course.id);
-    };
-  
-    const toggleChapter = (chapterName) => {
-      setExpandedChapters((prevState) => ({
-        ...prevState,
-        [chapterName]: !prevState[chapterName],
-      }));
-    };
-  
-    const toggleTopic = (topicName) => {
-      setExpandedTopics((prevState) => ({
-        ...prevState,
-        [topicName]: !prevState[topicName],
-      }));
-    };
-  
-    const handleVideoSelect = async (videoLink, topicDescription, index) => {
-      setSelectedVideo(videoLink.link);
-      setSelectedTopicDescription(topicDescription);
-      setSelectedVideoDescription(videoLink.description);
-  
-      if (videoRef.current) {
-        videoRef.current.index = index;
-      }
-  
-      if (!videoProgress[videoLink.link]) {
-        await saveVideoProgress(selectedCourse.id, videoLink.link, 0);
-      }
-  
-      window.localStorage.setItem('currentVideo', videoLink.link);
-    };
-  
-    const handleLoadedMetadata = () => {
-      const currentVideo = window.localStorage.getItem('currentVideo');
-      if (currentVideo) {
-        setSelectedVideo(currentVideo);
-      } else if (
-        selectedCourse?.chapters?.length > 0 &&
-        selectedCourse.chapters[0].topics[0]?.videoLinks?.length > 0
-      ) {
-        setSelectedVideo(selectedCourse.chapters[0].topics[0]?.videoLinks[0]?.link);
-      } else {
-        setSelectedVideo(null);
-      }
-    };
-  
-    useEffect(() => {
-      if (videoRef.current) {
-        videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-        videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
-      }
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
-          videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-        }
-      };
-    }, [selectedVideo]);
-  
-    const handleTimeUpdate = () => {
-      if (selectedVideo && videoProgress[selectedVideo] !== undefined && videoProgress[selectedVideo] < 100) {
-        const progress = videoProgress[selectedVideo];
-        if (videoRef.current && videoRef.current.duration) {
-          videoRef.current.currentTime = (videoRef.current.duration * progress) / 100;
-        }
-      }
-    };
-  
-    useEffect(() => {
-      if (selectedVideo && videoRef.current) {
-        if (typeof videoRef.current.play === 'function') {
-          videoRef.current.play();
-        }
-      }
-    }, [selectedVideo]);
-  
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-  
-    if (selectedCourse && selectedVideo) {
-      return (
-        <div className="min-h-screen bg-gray-200 p-4">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4"
-            onClick={handleBackToSelector}
-          >
-            Back to Video Selector
-          </button>
-          <div ref={videoRef} className="md:w-2/3 p-2 rounded-lg shadow-lg relative bg-white">
-            <video
-              key={selectedVideo} // Ensure re-render on video change
-              controls
-              className="w-full h-64 object-cover rounded-lg shadow-lg"
-              disablePictureInPicture
-              onContextMenu={(e) => e.preventDefault()}
-              controlsList="nodownload noremoteplayback noplaybackrate noautohide"
-              onPause={handlePause}
-              onEnded={handleEnded}
-              autoPlay
-              onLoadedMetadata={handleLoadedMetadata}
-              onTimeUpdate={handleTimeUpdate}
-            >
-              <source src={selectedVideo} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <h1 className="font-bold text-2xl mt-4 text-black">Description</h1>
-            {selectedVideoDescription && (
-              <div
-                style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}
-                dangerouslySetInnerHTML={{ __html: selectedVideoDescription }}
-              />
-            )}
-          </div>
-        </div>
-      );
-    }
-  
-    if (selectedCourse) {
-      return (
-        <div className="min-h-screen bg-gray-200 p-8">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4"
-            onClick={() => setSelectedCourse(null)}
-          >
-            Back to My Courses
-          </button>
-          <div className="flex space-x-4 mb-4">
-            <h2 className="text-3xl font-bold">{selectedCourse.name}</h2>
-          </div>
-          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
-            <div className="md:w-1/3 bg-white p-4 rounded-lg shadow-lg overflow-y-auto">
-              {selectedCourse.chapters.map((chapter, chapterIndex) => (
-                <div key={chapterIndex} className="mb-6">
-                  <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => toggleChapter(chapter.chapterName)}>
-                    <h3 className="text-xl font-bold text-black">{chapter.chapterName}</h3>
-                    {expandedChapters[chapter.chapterName] ? <FaChevronUp /> : <FaChevronDown />}
-                  </div>
-                  {(expandedChapters[chapter.chapterName] || chapterIndex === 0) && (
-                    <div>
-                      {chapter.topics.map((topic, topicIndex) => (
-                        <div key={topicIndex} className="mb-4">
-                          <div
-                            className="flex justify-between items-center p-2 bg-gray-600 text-gray-300 rounded-lg cursor-pointer hover:bg-blue-500 hover:text-white transition-colors duration-300"
-                            onClick={() => toggleTopic(topic.topicName)}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <FaVideo className="text-blue-400" />
-                              <h4 className="text-lg font-semibold flex-grow">{topic.topicName}</h4>
-                              <span>{topic.videoLinks.length} videos</span>
-                              {expandedTopics[topic.topicName] ? <FaChevronUp /> : <FaChevronDown />}
-                            </div>
-                          </div>
-                          {expandedTopics[topic.topicName] && (
-                            <div className="mt-2 space-y-2">
-                              <p className="text-gray-700 p-2 bg-gray-100 rounded-lg">{topic.topicDescription}</p>
-                              {topic.videoLinks.map((videoLink, videoIndex) => (
-                                <div
-                                  key={videoIndex}
-                                  className={`p-2 bg-gray-700 text-gray-300 rounded-lg cursor-pointer hover:bg-blue-500 hover:text-white transition-colors duration-300 ${
-                                    selectedVideo === videoLink.link ? 'bg-blue-700 text-white' : ''
-                                  }`}
-                                  onClick={() => handleVideoSelect(videoLink, topic.topicDescription, videoIndex)}
-                                >
-                                  <div className="flex justify-between">
-                                    <h5 className="text-md font-semibold">Video {videoIndex + 1}</h5>
-                                    {videoProgress.completed && videoProgress.completed[videoLink.link] && <FaCheck className="text-green-500" />}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    }
-  
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
-        <header className="flex justify-between items-center p-4 bg-white shadow">
-          <h1 className="text-2xl font-bold text-blue-600">My Courses</h1>
-          <button onClick={handleNotificationClick} className="text-blue-600 font-semibold">
-            Notifications
-          </button>
-        </header>
-  
-        <main className="p-4 space-y-4">
-          {courses.map((course) => {
-            const category = Object.values(categories).find((category) => category.courses && category.courses.includes(course.id));
-            return (
-              <div
-                key={course.id}
-                className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center space-y-2 relative"
-              >
-                <Image
-                  src={course.thumbnail}
-                  alt={course.name}
-                  width={200}
-                  height={120}
-                  className="w-full h-33 object-cover rounded-lg mb-4"
-                />
-                <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
-                <p className="text-gray-700 text-center">{course.description}</p>
-                <div className="flex justify-between w-full text-xs mt-2">
-                  <span className="bg-blue-500 text-white px-3 py-1 rounded-full">{course.completionPercentage.toFixed(0)}% complete</span>
-                  {category && (
-                    <span className="bg-red-500 text-white px-3 py-1 rounded-full">
-                      {category.name}
-                    </span>
-                  )}
-                  <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
-                </div>
-                <button
-                  className="bg-blue-600 text-white px-4 py-2 rounded-full mt-4 w-full font-semibold hover:bg-blue-700 transition-colors duration-300"
-                  onClick={() => handleCourseClick(course)}
-                >
-                  Start Learning
-                </button>
-              </div>
+
+            const courseData = courseDoc.data();
+            const { name, description, thumbnail, chapters = [], courseLevel } = courseData;
+
+            const updatedChapters = await Promise.all(
+                chapters.map(async (chapter, chapterIndex) => {
+                    const topics = await Promise.all(
+                        chapter.topics.map(async (topic, topicIndex) => ({
+                            ...topic,
+                            id: `topic-${chapterIndex + 1}-${topicIndex + 1}`,
+                            videoLinks: (topic.videoLinks || []).map((video, videoIndex) => ({
+                                ...video,
+                                id: `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}`
+                            }))
+                        }))
+                    );
+                    return {
+                        chapterName: chapter.chapterName,
+                        topics,
+                        id: `chapter-${chapterIndex + 1}`
+                    };
+                })
             );
-          })}
-        </main>
-      </div>
+
+            setSelectedCourse({
+                id: courseDoc.id,
+                name: name || 'Unnamed Course',
+                description: description || 'No description available',
+                thumbnail: thumbnail || 'https://via.placeholder.com/600x400',
+                chapters: updatedChapters,
+                courseLevel: courseLevel || 'Not Specified'
+            });
+
+            await fetchVideoProgress(courseId);
+            setLoading(false);
+        } catch (error) {
+            setError('Error fetching course data');
+            setLoading(false);
+        }
+    };
+
+    const fetchVideoProgress = async (courseId) => {
+        try {
+            const videoProgressCollection = collection(db, 'users', userUid, 'courses', courseId, 'videoProgress');
+            const videoProgressSnapshot = await getDocs(videoProgressCollection);
+            const progressData = {};
+            const completedVideosList = videoProgressSnapshot.docs
+                .filter((doc) => doc.data().fullWatched)
+                .map((doc) => {
+                    progressData[doc.id] = doc.data().progress;
+                    return doc.id;
+                });
+            setCompletedVideos(completedVideosList);
+            setVideoProgress(progressData);
+
+            const lastWatchedDoc = await getDoc(doc(collection(db, 'users', userUid, 'courses', courseId, 'videoProgress'), 'lastWatched'));
+            if (lastWatchedDoc.exists()) {
+                const lastWatchedUrl = lastWatchedDoc.data().watched;
+                const lastWatchedVideo = findVideoByUrl(lastWatchedUrl);
+                if (lastWatchedVideo) {
+                    setSelectedVideo(lastWatchedVideo);
+                    setSelectedVideoDescription(lastWatchedVideo.description || 'No description available');
+                    expandRelevantChaptersAndTopics(lastWatchedVideo.id);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching video progress:', error);
+        }
+    };
+
+    const findVideoByUrl = (url) => {
+        for (const chapter of selectedCourse?.chapters || []) {
+            for (const topic of chapter.topics || []) {
+                for (const video of topic.videoLinks || []) {
+                    if (video.link === url) {
+                        return video;
+                    }
+                }
+            }
+        }
+        return null;
+    };
+
+    const expandRelevantChaptersAndTopics = (videoId) => {
+        for (const chapter of selectedCourse?.chapters || []) {
+            for (const topic of chapter.topics || []) {
+                for (const video of topic.videoLinks || []) {
+                    if (video.id === videoId) {
+                        setExpandedChapters((prev) => ({ ...prev, [chapter.chapterName]: true }));
+                        setExpandedTopics((prev) => ({ ...prev, [`${chapter.chapterName}-${topic.topicName}`]: true }));
+                    }
+                }
+            }
+        }
+    };
+
+    const handleCourseClick = (course) => {
+        setSelectedCourse(course);
+        setSelectedVideo(null);
+        setSelectedVideoDescription(null);
+        fetchCourseData(course.id);
+    };
+
+    const handleVideoClick = async (video) => {
+        if (!canWatch(video)) {
+            return;
+        }
+        setSelectedVideo(video);
+        setSelectedVideoDescription(video.description || 'No description available');
+
+        const lastWatchedRef = doc(collection(db, 'users', userUid, 'courses', selectedCourse.id, 'videoProgress'), 'lastWatched');
+        await setDoc(lastWatchedRef, { watched: video.link }, { merge: true });
+    };
+
+    const toggleChapter = (chapterName) => {
+        setExpandedChapters((prevState) => ({
+            ...prevState,
+            [chapterName]: !prevState[chapterName]
+        }));
+    };
+
+    const toggleTopic = (chapterName, topicName) => {
+        setExpandedTopics((prevState) => ({
+            ...prevState,
+            [`${chapterName}-${topicName}`]: !prevState[`${chapterName}-${topicName}`]
+        }));
+    };
+
+    const saveVideoProgress = async (video, progress, fullWatched) => {
+        if (!video || !video.id) {
+            return;
+        }
+
+        const videoProgressRef = doc(db, 'users', userUid, 'courses', selectedCourse.id, 'videoProgress', video.id);
+        await setDoc(videoProgressRef, {
+            progress,
+            fullWatched: progress === 100,
+            updatedAt: new Date()
+        }, { merge: true });
+
+        if (progress === 100) {
+            setCompletedVideos((prev) => [...prev, video.id]);
+        }
+
+        setVideoProgress((prev) => ({
+            ...prev,
+            [video.id]: progress
+        }));
+    };
+
+    const handleVideoPause = () => {
+        if (videoRef.current && selectedVideo) {
+            const progress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+            saveVideoProgress(selectedVideo, progress, progress === 100);
+        }
+    };
+
+    const handleVideoEnded = () => {
+        saveVideoProgress(selectedVideo, 100, true);
+        const nextVideo = getNextVideo();
+        if (nextVideo) {
+            setSelectedVideo(nextVideo);
+            setSelectedVideoDescription(nextVideo.description || 'No description available');
+            updateLastWatchedVideo(nextVideo.link);
+        }
+    };
+
+    const updateLastWatchedVideo = async (url) => {
+        try {
+            const lastWatchedRef = doc(collection(db, 'users', userUid, 'courses', selectedCourse.id, 'videoProgress'), 'lastWatched');
+            await setDoc(lastWatchedRef, { watched: url }, { merge: true });
+        } catch (error) {
+            console.error('Error updating last watched video:', error);
+        }
+    };
+
+    const getNextVideo = () => {
+        let foundCurrent = false;
+        for (const chapter of selectedCourse.chapters) {
+            for (const topic of chapter.topics) {
+                for (const video of topic.videoLinks) {
+                    if (foundCurrent) {
+                        return video;
+                    }
+                    if (selectedVideo && video.link === selectedVideo.link) {
+                        foundCurrent = true;
+                    }
+                }
+            }
+        }
+        return null;
+    };
+
+    const canWatch = (video) => {
+        if (completedVideos.includes(video.id)) {
+            return true;
+        }
+
+        const firstVideo = selectedCourse.chapters[0].topics[0].videoLinks[0];
+        if (video.id === firstVideo.id) {
+            return true;
+        }
+
+        let previousVideo = null;
+        for (const chapter of selectedCourse.chapters) {
+            for (const topic of chapter.topics) {
+                for (const item of topic.videoLinks) {
+                    if (item.id === video.id) {
+                        return previousVideo === null || completedVideos.includes(previousVideo.id);
+                    }
+                    previousVideo = item;
+                }
+            }
+        }
+        return false;
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
+    if (!selectedCourse) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
+                <header className="flex justify-between items-center p-4 bg-white shadow">
+                    <h1 className="text-2xl font-bold text-blue-600">My Courses</h1>
+                </header>
+
+                <main className="p-4 space-y-4">
+                    {courses.map((course) => (
+                        <div
+                            key={course.id}
+                            className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center space-y-2 relative"
+                        >
+                            <Image
+                                src={course.thumbnail}
+                                alt={course.name}
+                                width={200}
+                                height={120}
+                                className="w-full h-33 object-cover rounded-lg mb-4"
+                            />
+                            <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
+                            <p className="text-gray-700 text-center">{course.description}</p>
+                            <div className="flex justify-between w-full text-xs mt-2">
+                                <span className="bg-blue-500 text-white px-3 py-1 rounded-full">{course.completionPercentage?.toFixed(0)}% complete</span>
+                                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
+                            </div>
+                            <button
+                                className="bg-blue-600 text-white px-4 py-2 rounded-full mt-4 w-full font-semibold hover:bg-blue-700 transition-colors duration-300"
+                                onClick={() => handleCourseClick(course)}
+                            >
+                                Start Learning
+                            </button>
+                        </div>
+                    ))}
+                </main>
+            </div>
+        );
+    }
+
+    if (selectedVideo) {
+        return (
+            <div className="min-h-screen bg-gray-200 p-4">
+                <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4"
+                    onClick={() => {
+                        setSelectedVideo(null);
+                        setSelectedVideoDescription(null);
+                    }}
+                >
+                    Back to Video Selector
+                </button>
+                <div ref={videoRef} className="md:w-2/3 p-2 rounded-lg shadow-lg relative bg-white">
+                    <video
+                        key={selectedVideo.link}
+                        src={selectedVideo.link}
+                        controls
+                        className={`w-full h-64 object-cover rounded-lg shadow-lg ${selectedVideo ? 'border-2 border-blue-500' : ''}`}
+                        disablePictureInPicture
+                        onContextMenu={(e) => e.preventDefault()}
+                        controlsList="nodownload noremoteplayback noplaybackrate noautohide"
+                        ref={videoRef}
+                        onPause={handleVideoPause}
+                        onEnded={handleVideoEnded}
+                        autoPlay
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                    <h1 className="font-bold text-2xl mt-4 text-black">Description</h1>
+                    {selectedVideoDescription && (
+                        <div
+                            style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}
+                            dangerouslySetInnerHTML={{ __html: selectedVideoDescription }}
+                        />
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen p-8 bg-gray-100">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={() => setSelectedCourse(null)}>
+                Back to My Courses
+            </button>
+            <div className="flex flex-col space-y-4">
+                <h2 className="text-3xl font-bold text-gray-800 text-center">{selectedCourse.name}</h2>
+                <div className="flex flex-col space-y-4">
+                    {selectedCourse.chapters.map((chapter) => (
+                        <div key={chapter.id} className="bg-white p-4 rounded-lg shadow-lg">
+                            <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => toggleChapter(chapter.chapterName)}>
+                                <h3 className="text-xl font-semibold text-gray-800">{chapter.chapterName}</h3>
+                                {expandedChapters[chapter.chapterName] ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+                            </div>
+                            {expandedChapters[chapter.chapterName] && (
+                                <div>
+                                    {chapter.topics.map((topic) => (
+                                        <div key={topic.id} className="mb-4">
+                                            <div
+                                                className={`flex justify-between items-center p-2 ${expandedTopics[`${chapter.chapterName}-${topic.topicName}`] ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200'} rounded-lg cursor-pointer hover:bg-blue-500 hover:text-white transition-colors duration-300`}
+                                                onClick={() => toggleTopic(chapter.chapterName, topic.topicName)}
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <FaVideo className="text-blue-400" />
+                                                    <h4 className="text-lg font-semibold">{topic.topicName}</h4>
+                                                </div>
+                                                <span>{topic.videoLinks.length} videos</span>
+                                                {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+                                            </div>
+                                            {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] && (
+                                                <div className="mt-2">
+                                                    <p className="text-sm text-gray-600">{topic.description}</p>
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        {topic.videoLinks.map((video) => (
+                                                            <div
+                                                                key={video.id}
+                                                                className={`p-2 rounded-lg cursor-pointer transition-colors duration-300 ${
+                                                                  selectedVideo?.link === video.link
+                                                                    ? 'bg-blue-700 text-white border-2 border-blue-500'
+                                                                    : !canWatch(video)
+                                                                    ? 'bg-gray-500 text-gray-400 cursor-not-allowed'
+                                                                    : 'bg-gray-700 text-gray-300 hover:bg-blue-500 hover:text-white'
+                                                                }`}
+                                                                onClick={() => handleVideoClick(video)}
+                                                            >
+                                                                <div className="flex justify-between items-center">
+                                                                    <h5 className="text-md font-semibold">Video</h5>
+                                                                    {completedVideos.includes(video.id) && <FaCheck className="ml-2 text-green-500" />}
+                                                                    {!canWatch(video) && <FaLock className="ml-2 text-red-500" />}
+                                                                </div>
+                                                                <p className="text-sm">{video.description}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
-  };
-  
-  export default PhoneMyCourses;
+};
+
+export default PhoneMyCourses;
