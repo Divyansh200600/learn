@@ -417,7 +417,7 @@ const VideoPlayer = () => {
                       </div>
                       {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-600">{topic.description}</p>
+                          <p className="text-sm text-gray-600">{topic.topicDescription}</p>
                           <div className="grid grid-cols-2 gap-2">
                             {topic.videoLinks.map((video, index) => (
                               <div

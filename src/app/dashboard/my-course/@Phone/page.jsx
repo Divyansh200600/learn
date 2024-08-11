@@ -20,6 +20,7 @@ const PhoneMyCourses = () => {
     const [userUid, setUserUid] = useState(null);
     const [completedVideos, setCompletedVideos] = useState([]);
     const [videoProgress, setVideoProgress] = useState({});
+    const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
     const videoRef = useRef(null);
 
     useEffect(() => {
@@ -220,6 +221,14 @@ const PhoneMyCourses = () => {
             return;
         }
 
+          // Always update progress to 100% if video is fully watched, even if it's watched again
+    if (completedVideos.includes(video.id)) {
+      fullWatched = true;
+      progress = 100;
+    } else if (fullWatched) {
+      progress = 100;
+    }
+
         const videoProgressRef = doc(db, 'users', userUid, 'courses', selectedCourse.id, 'videoProgress', video.id);
         await setDoc(videoProgressRef, {
             progress,
@@ -304,6 +313,13 @@ const PhoneMyCourses = () => {
         return false;
     };
 
+    const handlePlaybackSpeedChange = (speed) => {
+        if (videoRef.current) {
+            videoRef.current.playbackRate = speed;
+            setPlaybackSpeed(speed);
+        }
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -382,10 +398,25 @@ const PhoneMyCourses = () => {
                     <h1 className="font-bold text-2xl mt-4 text-black">Description</h1>
                     {selectedVideoDescription && (
                         <div
-                            style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}
+                            className="border border-gray-300 p-2 mt-2 bg-gray-50"
                             dangerouslySetInnerHTML={{ __html: selectedVideoDescription }}
                         />
                     )}
+                    <div className="flex items-center mt-4 space-x-2">
+                        {[0.5, 1.0, 1.5, 2.0].map((speed) => (
+                            <button
+                                key={speed}
+                                className={`px-4 py-2 rounded-full transition-all duration-300 ${
+                                    playbackSpeed === speed
+                                        ? 'bg-blue-500 text-white font-semibold'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
+                                }`}
+                                onClick={() => handlePlaybackSpeedChange(speed)}
+                            >
+                                {speed}x
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -422,7 +453,7 @@ const PhoneMyCourses = () => {
                                             </div>
                                             {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] && (
                                                 <div className="mt-2">
-                                                    <p className="text-sm text-gray-600">{topic.description}</p>
+                                                    <p className="text-sm text-gray-600">{topic.topicDescription}</p>
                                                     <div className="grid grid-cols-1 gap-2">
                                                         {topic.videoLinks.map((video) => (
                                                             <div
