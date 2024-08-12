@@ -21,8 +21,6 @@ const PhoneMyCourses = () => {
     const [completedVideos, setCompletedVideos] = useState([]);
     const [videoProgress, setVideoProgress] = useState({});
     const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
-    const [isFullScreen, setIsFullScreen] = useState(false);
-
     const videoRef = useRef(null);
 
     useEffect(() => {
@@ -363,6 +361,40 @@ const PhoneMyCourses = () => {
         return null;
     };
 
+    useEffect(() => {
+        const handleOrientationChange = () => {
+          if (window.screen.orientation.type.startsWith('landscape')) {
+            if (videoRef.current) {
+              if (videoRef.current.requestFullscreen) {
+                videoRef.current.requestFullscreen();
+              } else if (videoRef.current.webkitRequestFullscreen) {
+                videoRef.current.webkitRequestFullscreen();
+              } else if (videoRef.current.msRequestFullscreen) {
+                videoRef.current.msRequestFullscreen();
+              } else if (videoRef.current.mozRequestFullScreen) {
+                videoRef.current.mozRequestFullScreen();
+              }
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              document.mozCancelFullScreen();
+            }
+          }
+        };
+    
+        window.addEventListener('orientationchange', handleOrientationChange);
+    
+        return () => {
+          window.removeEventListener('orientationchange', handleOrientationChange);
+        };
+      }, []);
+
     const canWatch = (video) => {
         if (completedVideos.includes(video.id)) {
             return true;
@@ -399,26 +431,6 @@ const PhoneMyCourses = () => {
             videoRef.current.playbackRate = speed;
         }
     };
-
-    const handleFullScreen = () => {
-        if (videoRef.current.requestFullscreen) {
-            videoRef.current.requestFullscreen();
-        } else if (videoRef.current.webkitRequestFullscreen) {
-            videoRef.current.webkitRequestFullscreen();
-        } else if (videoRef.current.mozRequestFullScreen) {
-            videoRef.current.mozRequestFullScreen();
-        } else if (videoRef.current.msRequestFullscreen) {
-            videoRef.current.msRequestFullscreen();
-        }
-
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(err => console.log(err));
-        } else if (window.screen && window.screen.orientation) {
-            window.screen.orientation.lock('landscape').catch(err => console.log(err));
-        }
-    };
-
-
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -480,32 +492,26 @@ const PhoneMyCourses = () => {
                 </button>
                 <div>
                     {selectedVideo && (
-                        <div>
-                            <video
-                                ref={videoRef}
-                                key={selectedVideo.link}
-                                src={selectedVideo.link}
-                                controls
-                                className="w-full h-64 object-cover rounded-lg shadow-lg"
-                                onLoadedMetadata={handleVideoLoaded}
-                                onPlay={() => {
-                                    if (videoRef.current) {
-                                        videoRef.current.playbackRate = playbackSpeed;
-                                    }
-                                }}
-                                onPause={handleVideoPause}
-                                onEnded={handleVideoEnded}
-                                autoPlay
-                            >
-                                Your browser does not support the video tag.
-                            </video>
-                            <button
-                                className="absolute bottom-4 right-4 bg-white text-black px-4 py-2 rounded-full"
-                                onClick={handleFullScreen}
-                            >
-                                ⛶
-                            </button>
-                        </div>
+                      <video
+                      ref={videoRef}
+                      key={selectedVideo.link}
+                      src={selectedVideo.link}
+                      controls
+                      className="w-full h-auto max-h-[75vh] object-cover rounded-lg shadow-lg"
+                      onLoadedMetadata={() => {
+                        if (videoRef.current) {
+                          videoRef.current.playbackRate = playbackSpeed;
+                        }
+                      }}
+                      onPause={handleVideoPause}
+                      onEnded={handleVideoEnded}
+                      autoPlay
+                      disablePictureInPicture
+                      controlsList="nodownload noremoteplayback"
+                      playsInline
+                    >
+                      Your browser does not support the video tag.
+                    </video>
                     )}
                     <h1 className="font-bold text-2xl mt-4 text-black">Description</h1>
                     {selectedVideoDescription && (
@@ -519,9 +525,9 @@ const PhoneMyCourses = () => {
                             <button
                                 key={speed}
                                 className={`px-4 py-2 rounded-full transition-all duration-300 ${playbackSpeed === speed
-                                    ? 'bg-blue-500 text-white font-semibold'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
-                                }`}
+                                        ? 'bg-blue-500 text-white font-semibold'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
+                                    }`}
                                 onClick={() => handlePlaybackSpeedChange(speed)}
                             >
                                 {speed}x
@@ -531,7 +537,6 @@ const PhoneMyCourses = () => {
                 </div>
             </div>
         );
-    
     }
 
     return (
