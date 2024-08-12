@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaBell } from 'react-icons/fa';
 
-const Header = ({ setActiveTab }) => {
+const Header = ({ setActiveTab, isSidebarOpen }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef(null);
 
@@ -31,10 +31,12 @@ const Header = ({ setActiveTab }) => {
   }, []);
 
   return (
-    <div className="relative flex justify-end items-center p-6">
+    <div
+      className={`relative flex flex-col items-end p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white `}
+    >
       <button
         onClick={handleNotificationsClick}
-        className="flex items-center p-2 text-white bg-purple-500 rounded-lg transition-all duration-300 hover:bg-purple-700"
+        className="flex items-center p-2 bg-purple-500 rounded-lg transition-all duration-300 hover:bg-purple-700"
       >
         <FaBell className="mr-2" />
         Notifications
@@ -44,7 +46,7 @@ const Header = ({ setActiveTab }) => {
           ref={notificationsRef}
           className="absolute right-6 top-16 bg-white text-black rounded-lg shadow-lg p-4 w-64"
         >
-          <h3 className="text-lg font-semibold mb-2">My Profile</h3>
+          <h3 className="text-lg font-semibold mb-2">Notifications</h3>
           <ul className="space-y-2">
             {notifications.map((notification, index) => (
               <li

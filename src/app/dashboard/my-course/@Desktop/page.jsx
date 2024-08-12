@@ -1,11 +1,10 @@
-'use client'
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { FaCheck, FaChevronDown, FaChevronUp, FaVideo } from 'react-icons/fa';
 import VanillaTilt from 'vanilla-tilt';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
 
@@ -61,69 +60,101 @@ const DesktopMyCourses = () => {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    const fetchUserCourses = async (uid) => {
-      try {
-        const userCoursesRef = collection(db, 'users', uid, 'courses');
-        const userCoursesSnapshot = await getDocs(userCoursesRef);
-        const courseIds = userCoursesSnapshot.docs.map((doc) => doc.id);
-
-        const coursePromises = courseIds.map(async (courseId) => {
-          try {
-            const courseDoc = await getDoc(doc(db, 'courses', courseId));
-            if (!courseDoc.exists()) {
-              console.warn(`Course with ID ${courseId} does not exist.`);
-              return null;
-            }
-
-            const courseData = courseDoc.data();
-            if (!courseData) {
-              console.warn(`Course data is undefined for course ID ${courseId}`);
-              return null;
-            }
-
-            const { name, description, thumbnail, chapters = [], courseLevel } = courseData;
-
-            const updatedChapters = await Promise.all(
-              chapters.map(async (chapter) => {
-                const topics = await Promise.all(
-                  chapter.topics.map(async (topic) => ({
-                    ...topic,
-                    videoLinks: topic.videoLinks || []
-                  }))
-                );
-                return { ...chapter, topics };
-              })
-            );
-
-            const videoProgressDoc = await getDoc(doc(db, 'users', uid, 'courses', courseId, 'videoProgress', 'progress'));
-            const videoProgress = videoProgressDoc.exists() ? videoProgressDoc.data() : {};
-
-            const completionPercentage = calculateCompletionPercentage(videoProgress, courseData);
-            return {
-              id: courseDoc.id,
-              name: name || 'Unnamed Course',
-              description: description || 'No description available',
-              thumbnail: thumbnail || 'https://via.placeholder.com/600x400',
-              chapters: updatedChapters,
-              courseLevel: courseLevel || 'Not Specified',
-              completionPercentage
-            };
-          } catch (error) {
-            console.error(`Error fetching data for course ID ${courseId}: `, error);
+  const fetchUserCourses = async (uid) => {
+    try {
+      const userCoursesRef = collection(db, 'users', uid, 'courses');
+      const userCoursesSnapshot = await getDocs(userCoursesRef);
+      const courseIds = userCoursesSnapshot.docs.map((doc) => doc.id);
+    
+      const coursePromises = courseIds.map(async (courseId) => {
+        try {
+          const courseDoc = await getDoc(doc(db, 'courses', courseId));
+          if (!courseDoc.exists()) {
+            console.warn(`Course with ID ${courseId} does not exist.`);
             return null;
           }
-        });
+    
+          const courseData = courseDoc.data();
+          if (!courseData) {
+            console.warn(`Course data is undefined for course ID ${courseId}`);
+            return null;
+          }
+    
+          const { name, description, thumbnail, chapters = [], courseLevel } = courseData;
+    
+          const updatedChapters = await Promise.all(
+            chapters.map(async (chapter, chapterIndex) => {
+              const topics = await Promise.all(
+                chapter.topics.map(async (topic, topicIndex) => {
+                  const videoLinks = topic.videoLinks.map((video, videoIndex) => ({
+                    ...video,
+                    id: `video-${chapterIndex+1}-${topicIndex+1}-${videoIndex+1}` // Ensuring ID format
+                  }));
+                  return {
+                    ...topic,
+                    videoLinks
+                  };
+                })
+              );
+              return {
+                ...chapter,
+                topics
+              };
+            })
+          );
 
-        const courseList = (await Promise.all(coursePromises)).filter(course => course !== null);
-        setCourses(courseList);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching courses: ', error);
-        setLoading(false);
-      }
-    };
+          const videoProgressSnapshot = await getDocs(collection(db, 'users', uid, 'courses', courseId, 'videoProgress'));
+          const videoProgress = {};
+          videoProgressSnapshot.forEach((videoDoc) => {
+            const data = videoDoc.data();
+            if (data) {
+              videoProgress[videoDoc.id] = data.progress;  // Store progress by video ID
+            }
+          });
+    
+          let totalVideos = 0;
+          let totalProgress = 0;
+          updatedChapters.forEach((chapter) => {
+            chapter.topics.forEach((topic) => {
+              topic.videoLinks.forEach((video) => {
+                if (video.id) {
+                  totalVideos += 1;
+                  const progress = videoProgress[video.id] !== undefined ? videoProgress[video.id] : 0;
+                  totalProgress += progress;
+                } else {
+                  console.warn(`Undefined Video ID in course ID ${courseId}`);
+                }
+              });
+            });
+          });
 
+          const completionPercentage = totalVideos > 0 ? Math.round(totalProgress / totalVideos) : 0;
+    
+          return {
+            id: courseDoc.id,
+            name: name || 'Unnamed Course',
+            description: description || 'No description available',
+            thumbnail: thumbnail || 'https://via.placeholder.com/600x400',
+            chapters: updatedChapters,
+            courseLevel: courseLevel || 'Not Specified',
+            completionPercentage
+          };
+        } catch (error) {
+          console.error(`Error fetching data for course ID ${courseId}: `, error);
+          return null;
+        }
+      });
+    
+      const courseList = (await Promise.all(coursePromises)).filter(course => course !== null);
+      setCourses(courseList);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching courses: ', error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         userUid.current = user.uid;
@@ -137,27 +168,11 @@ const DesktopMyCourses = () => {
     return () => unsubscribe();
   }, []);
 
-  const calculateCompletionPercentage = (videoProgress, course) => {
-    let totalVideos = 0;
-    let completedVideos = 0;
-
-    course.chapters.forEach((chapter) => {
-      chapter.topics.forEach((topic) => {
-        totalVideos += topic.videoLinks.length;
-        topic.videoLinks.forEach((videoLink) => {
-          if (videoProgress && videoProgress.completed && videoProgress.completed[videoLink.link]) {
-            completedVideos++;
-          }
-        });
-      });
-    });
-
-    return totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0;
-  };
-
   const handleCourseClick = (courseId) => {
     router.push(`/enroll-courses/${courseId}`);
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen p-8">
@@ -182,11 +197,11 @@ const DesktopMyCourses = () => {
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-white text-xl font-bold">{course.completionPercentage.toFixed(0)}% Complete</span>
+                  <span className="text-white text-xl font-bold">{course.completionPercentage}% Complete</span>
                 </div>
               </div>
               <div className="absolute top-4 right-4 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                {course.completionPercentage.toFixed(0)}% Complete
+                {course.completionPercentage}% Complete
               </div>
               {category && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
@@ -202,7 +217,7 @@ const DesktopMyCourses = () => {
                 <div
                   className="bg-blue-500 h-2 rounded-full"
                   style={{
-                    width: `${course.completionPercentage.toFixed(0)}%`,
+                    width: `${course.completionPercentage}%`,
                     transition: 'width 1s'
                   }}
                 ></div>

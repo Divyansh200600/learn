@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { FaChalkboardTeacher, FaUserTie, FaBriefcase, FaQuestionCircle, FaVideo } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaUserTie, FaBriefcase, FaQuestionCircle, FaVideo, FaAward } from 'react-icons/fa';
 
 const BenefitsContainer = styled.div`
   background-color: #012a4a;
@@ -85,6 +85,11 @@ const BenefitsSection = () => {
           <Icon><FaVideo /></Icon>
           <BenefitTitle>Live Classes</BenefitTitle>
           <BenefitDescription>Learn by practice with instant feedback</BenefitDescription>
+        </BenefitCard>
+        <BenefitCard>
+          <Icon><FaAward /></Icon>
+          <BenefitTitle>Certification upon Completion</BenefitTitle>
+          <BenefitDescription>Earn a recognized certification to validate your skills and knowledge</BenefitDescription>
         </BenefitCard>
       </BenefitsGrid>
     </BenefitsContainer>

@@ -51,23 +51,7 @@ export default function PhoneHomescreen() {
       </section>
      
 
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold text-blue-600">Courses</h2>
-          <ul className="list-none p-0 space-y-4">
-            <li className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-bold text-gray-800">Course A</h3>
-              <p className="text-gray-700">Introduction to Course A</p>
-            </li>
-            <li className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-bold text-gray-800">Course B</h3>
-              <p className="text-gray-700">Introduction to Course B</p>
-            </li>
-            <li className="bg-white rounded-lg shadow p-4">
-              <h3 className="text-lg font-bold text-gray-800">Course C</h3>
-              <p className="text-gray-700">Introduction to Course C</p>
-            </li>
-          </ul>
-        </section>
+        
 
 
       </main>

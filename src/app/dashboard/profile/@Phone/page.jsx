@@ -1,14 +1,17 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { db, auth } from '../../../../utils/Firebase/firebaseConfig';
+import { CogIcon } from '@heroicons/react/outline';
+import { db, auth, storage } from '../../../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useRouter } from 'next/navigation';
 import GoogleLogin from '../../../Auth/login'; 
 import Login from '../../../../components/courseComponents/login/loginforPhone';
 
 export default function PhoneProfileScreen() {
+  const router = useRouter(); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('John Doe');
   const [email, setEmail] = useState('example@gmail.com');
@@ -190,21 +193,37 @@ export default function PhoneProfileScreen() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
       <div className="flex-grow p-4 relative">
         {/* Edit Profile Button */}
+        <button
+          className="absolute top-4 left-4 bg-transparent text-gray-600 hover:text-blue-600 transition-colors"
+          onClick={() => router.push('/dashboard/settings')}
+        >
+          <CogIcon className="w-6 h-6" />
+        </button>
+
         {!isEditing ? (
-            <button
-              className="absolute top-4 right-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-              onClick={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </button>
-          ) : (
-            <button
-              className="absolute top-4 right-4 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-          )}
+          <button
+            className="absolute top-4 right-4 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => setIsEditing(true)}
+          >
+            Edit Profile
+          </button>
+        ) : (
+          <button
+            className="absolute top-4 right-4 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+            onClick={handleSave}
+          >
+            Save
+          </button>
+        )}
+
+        {/* Navigate to Achievement Page */}
+        <button
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+          onClick={() => router.push('/dashboard/achievements')}
+        >
+          View Achievements
+        </button>
+
         <header className="text-center mb-6">
           <Image
             src={userDetails.profilePhoto}

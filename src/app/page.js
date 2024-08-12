@@ -63,7 +63,7 @@ const LoadingScreen = () => (
     <div className="relative text-center">
       <Image src={LoadingGif} alt="Loading..." className="w-32 h-32 mb-4" />
       <p className="text-gray-800 text-lg absolute top-[calc(100%-(-170px))] left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-        Love from ❤️ PulseZest
+        Love from ❤️ PulseZest-Learning
       </p>
     </div>
   </div>

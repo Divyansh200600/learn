@@ -62,7 +62,7 @@ const StudentSection = () => {
             <Image style={profileCircleStyle} src={Profile6} alt="Profile 3" width={100} height={100} />
               <div style={{ marginLeft: '20px' }}>
                 <h3 style={{ color: '#001524', marginBottom: '5px', fontWeight: 'bold' }}>Divyansh Chauhan</h3>
-                <p style={{ marginBottom: '5px', color: 'black' }}>NO DATA :(</p>
+                <p style={{ marginBottom: '5px', color: 'black' }}>CTO PulseZest-Learning</p>
                 <p style={{ marginBottom: '0', color: 'black' }}>Web Developer</p>
               </div>
             </div>
