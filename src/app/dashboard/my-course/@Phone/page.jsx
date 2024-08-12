@@ -446,47 +446,7 @@ const PhoneMyCourses = () => {
 
     if (selectedVideo) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800 pb-26">
-                <header className="flex justify-between items-center p-4 bg-white shadow">
-                    <h1 className="text-2xl font-bold text-blue-600">My Courses</h1>
-                </header>
-
-                <main className="p-4 space-y-4 pb-16"> {/* Add pb-16 or adjust as needed */}
-    {courses.map((course) => (
-        <div
-            key={course.id}
-            className={`bg-white rounded-lg shadow-md p-4 flex flex-col items-center space-y-2 relative ${courses.length === 1 ? 'mb-16' : ''}`} // Add mb-16 or adjust as needed
-            >
-            <Image
-                src={course.thumbnail}
-                alt={course.name}
-                width={200}
-                height={120}
-                className="w-full h-33 object-cover rounded-lg mb-4"
-            />
-            <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
-            <p className="text-gray-700 text-center">{course.description}</p>
-            <div className="flex justify-between w-full text-xs mt-2">
-                <span className="bg-blue-500 text-white px-3 py-1 rounded-full">{course.completionPercentage || 0}% complete</span>
-                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
-            </div>
-            <button
-                className="bg-blue-600 text-white px-4 py-2 rounded-full mt-4 w-full font-semibold hover:bg-blue-700 transition-colors duration-300"
-                onClick={() => handleCourseClick(course)}
-            >
-                Start Learning
-            </button>
-        </div>
-    ))}
-</main>
-
-            </div>
-        );
-    }
-
-    if (selectedVideo) {
-        return (
-            <div className="min-h-screen bg-gray-200 p-4 pb-16">
+            <div className="min-h-screen bg-gray-200 p-4">
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4"
                     onClick={() => {
@@ -544,7 +504,7 @@ const PhoneMyCourses = () => {
     }
 
     return (
-        <div className="min-h-screen p-8 bg-gray-100 pb-16">
+        <div className="min-h-screen p-8 bg-gray-100">
             <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={() => setSelectedCourse(null)}>
                 Back to My Courses
             </button>
