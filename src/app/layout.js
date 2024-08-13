@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "PulseZest Learning",
   description: "The King 👑 of Learning Area",
-  icon: "/favicon.ico"  
+    
 };
 
 export default function RootLayout({ children }) {

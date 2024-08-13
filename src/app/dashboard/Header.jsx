@@ -32,7 +32,10 @@ const Header = ({ setActiveTab, isSidebarOpen }) => {
 
   return (
     <div
-      className={`relative flex flex-col items-end p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white `}
+      className={`relative flex flex-col items-end p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white ${
+        isSidebarOpen ? 'ml-[80px]' : 'ml-[-100px]'
+      } transition-all duration-300`}
+      style={{ zIndex: 5, position: 'relative' }}
     >
       <button
         onClick={handleNotificationsClick}

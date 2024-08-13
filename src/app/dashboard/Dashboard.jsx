@@ -102,13 +102,23 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className={`bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col transition-all duration-700 ease-in-out ${isSidebarOpen ? 'w-1/6' : 'w-20'}`}>
-        <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
-          {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
-          <button onClick={toggleSidebar} className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110">
-            {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
-          </button>
+    <div className="flex min-h-screen bg-gray-200">
+    <div
+      className={`bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col transition-all duration-700 ease-in-out ${
+        isSidebarOpen ? 'w-1/6' : 'w-20'
+      } ${isSidebarOpen ? 'h-[calc(300vh-20px)]' : 'h-[calc(175vh-20px)'}  z-40`}
+    >
+      <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
+        {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
+        <button
+          onClick={toggleSidebar}
+          className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110"
+        >
+          {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
+        </button>
+
+
+
         </div>
         {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome {username}</div>}
         <div className="flex flex-col mt-8 space-y-4">
@@ -166,7 +176,7 @@ const Dashboard = () => {
          
         </div>
       </div>
-      <div className={`flex-1 transition-all duration-700 ease-in-out ${isSidebarOpen ? 'ml-1/6' : 'ml-20'}`}>
+     <div className={`flex-1 ml-${isSidebarOpen ? '1/6' : '20'} transition-all duration-700 ease-in-out relative`} style={{ zIndex: 10 }}>
         <Header setActiveTab={setActiveTab} />
         <div className="p-4 text-black">{renderContent()}</div>
       </div>
