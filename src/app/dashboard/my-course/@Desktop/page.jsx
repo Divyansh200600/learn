@@ -184,7 +184,8 @@ const DesktopMyCourses = () => {
          style={{ marginTop: '-10%', transform: 'translateY(-50%)' }}
        >
          <h2 className="text-3xl font-bold mb-4">No Courses Available</h2>
-         <p className="text-gray-600 mb-4">It looks like you don't have any courses yet.</p>
+         <p className="text-gray-600 mb-4">It looks like you don&apos;t have any courses yet.</p>
+
          <p className="text-gray-600 mb-4">Browse our catalog and find courses that interest you!</p>
          <button
            className="bg-blue-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-600 transition-colors duration-300"

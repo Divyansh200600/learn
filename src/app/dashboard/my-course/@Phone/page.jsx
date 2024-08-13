@@ -130,7 +130,8 @@ const MyCourses = () => {
                 {courses.length === 0 ? (
                     <div className="bg-white rounded-lg shadow-md p-6 text-center">
                         <h2 className="text-2xl font-semibold text-gray-800 mb-4">No Courses Found</h2>
-                        <p className="text-gray-600 mb-4">It looks like you don't have any courses yet.</p>
+                        <p className="text-gray-600 mb-4">It looks like you don&apos;t have any courses yet.</p>
+
                         <p className="text-gray-600 mb-4">Browse our catalog and find courses that interest you!</p>
                         <button
                             className="bg-blue-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-300"
