@@ -22,7 +22,7 @@ const MyCourses = () => {
                 } else {
                     setUserUid(null);
                     setLoading(false);
-                    router.push('/login');
+                    router.push('/dashboard/profile');
                 }
             });
         };
@@ -37,23 +37,74 @@ const MyCourses = () => {
 
             const coursePromises = courseIds.map(async (courseId) => {
                 const courseDoc = await getDoc(doc(db, 'courses', courseId));
+                if (!courseDoc.exists()) {
+                    console.warn(`Course with ID ${courseId} does not exist.`);
+                    return null;
+                }
+
                 const courseData = courseDoc.data();
-                const { name, description, thumbnail, chapters, courseLevel } = courseData;
+                const { name, description, thumbnail, chapters = [], courseLevel } = courseData;
+
+                const updatedChapters = await Promise.all(
+                    chapters.map(async (chapter, chapterIndex) => {
+                        const topics = await Promise.all(
+                            chapter.topics.map(async (topic, topicIndex) => ({
+                                ...topic,
+                                id: `topic-${chapterIndex + 1}-${topicIndex + 1}`,
+                                videoLinks: (topic.videoLinks || []).map((video, videoIndex) => ({
+                                    ...video,
+                                    id: `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}`,
+                                }))
+                            }))
+                        );
+                        return { ...chapter, topics };
+                    })
+                );
+
+                const videoProgressSnapshot = await getDocs(collection(db, 'users', uid, 'courses', courseId, 'videoProgress'));
+                const videoProgress = {};
+                videoProgressSnapshot.forEach((videoDoc) => {
+                    const data = videoDoc.data();
+                    if (data) {
+                        videoProgress[videoDoc.id] = data.progress;  // Store progress by video ID
+                    }
+                });
+
+                let totalVideos = 0;
+                let totalProgress = 0;
+                updatedChapters.forEach((chapter) => {
+                    chapter.topics.forEach((topic) => {
+                        topic.videoLinks.forEach((video) => {
+                            if (video.id) {
+                                totalVideos += 1;
+                                const progress = videoProgress[video.id] !== undefined ? videoProgress[video.id] : 0;
+                                totalProgress += progress;
+                            } else {
+                                console.warn(`Undefined Video ID in course ID ${courseId}`);
+                            }
+                        });
+                    });
+                });
+
+                const completionPercentage = totalVideos > 0 ? Math.round(totalProgress / totalVideos) : 0;
 
                 return {
                     id: courseDoc.id,
-                    name,
-                    description,
-                    thumbnail,
-                    chapters,
-                    courseLevel,
+                    name: name || 'Unnamed Course',
+                    description: description || 'No description available',
+                    thumbnail: thumbnail || 'https://via.placeholder.com/600x400',
+                    chapters: updatedChapters,
+                    courseLevel: courseLevel || 'Not Specified',
+                    completionPercentage
                 };
             });
 
-            setCourses(await Promise.all(coursePromises));
+            const courseList = (await Promise.all(coursePromises)).filter(course => course !== null);
+            setCourses(courseList);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching courses: ', error);
+            setError('Error fetching courses');
             setLoading(false);
         }
     };
@@ -75,7 +126,7 @@ const MyCourses = () => {
             <header className="flex justify-between items-center p-4 bg-white shadow">
                 <h1 className="text-2xl font-bold text-blue-600">My Courses</h1>
             </header>
-            <main className="p-4 space-y-4">
+            <main className="p-4 pb-[calc(60px+1rem)]">
                 {courses.map((course) => (
                     <div
                         key={course.id}
@@ -91,7 +142,9 @@ const MyCourses = () => {
                         <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
                         <p className="text-gray-700 text-center">{course.description}</p>
                         <div className="flex justify-between w-full text-xs mt-2">
-                            <span className="bg-blue-500 text-white px-3 py-1 rounded-full">{course.completionPercentage?.toFixed(0)}% complete</span>
+                            <span className="bg-blue-500 text-white px-3 py-1 rounded-full">
+                                {course.completionPercentage}% complete
+                            </span>
                             <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
                         </div>
                         <button

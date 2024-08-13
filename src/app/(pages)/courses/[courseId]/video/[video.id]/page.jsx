@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDocs, setDoc, collection , getDoc} from 'firebase/firestore';
 import { db, auth } from '../../../../../../utils/Firebase/firebaseConfig';
 import { useRouter, useParams } from 'next/navigation';
 
@@ -11,6 +11,7 @@ const VideoPlayer = () => {
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [selectedVideoDescription, setSelectedVideoDescription] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [completedVideos, setCompletedVideos] = useState([]);
     const router = useRouter();
     const videoRef = useRef(null);
     const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
@@ -18,23 +19,25 @@ const VideoPlayer = () => {
 
     useEffect(() => {
         const getUserUid = () => {
-            auth.onAuthStateChanged((user) => {
+            const unsubscribe = auth.onAuthStateChanged((user) => {
                 if (user) {
                     setUserUid(user.uid);
                     fetchVideoData();
                 } else {
                     setUserUid(null);
                     setLoading(false);
-                    router.push('/login');
+                    router.push('/dashboard/profile');
                 }
             });
+            return () => unsubscribe(); // Clean up subscription on component unmount
         };
         getUserUid();
-    }, [router, courseId]);
+    }, [router]);
 
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.playbackRate = playbackSpeed;
+            console.log('Playback speed set to:', playbackSpeed); // Log the playback speed
         }
     }, [playbackSpeed]);
 
@@ -43,10 +46,12 @@ const VideoPlayer = () => {
             const videoLinks = JSON.parse(localStorage.getItem('videoLinks')) || [];
             const currentVideoIndex = localStorage.getItem('currentVideoIndex') || 0;
             
+           
             if (videoLinks.length > 0) {
                 setVideos(videoLinks);
                 setSelectedVideo(videoLinks[currentVideoIndex]);
                 setSelectedVideoDescription(videoLinks[currentVideoIndex].description || 'No description available');
+                await fetchCompletedVideos(); // Fetch completed videos from Firestore
             } else {
                 throw new Error('No video links found');
             }
@@ -55,6 +60,23 @@ const VideoPlayer = () => {
         } catch (error) {
             console.error('Error fetching video data: ', error);
             setLoading(false);
+        }
+    };
+
+    const fetchCompletedVideos = async () => {
+        if (!userUid || !courseId) return;
+
+        try {
+            const videoProgressCollection = collection(db, 'users', userUid, 'courses', courseId, 'videoProgress');
+            const videoProgressSnapshot = await getDocs(videoProgressCollection);
+            const completedVideoIds = videoProgressSnapshot.docs
+                .filter((doc) => doc.data().fullWatched)
+                .map((doc) => doc.id);
+            
+           
+            setCompletedVideos(completedVideoIds);
+        } catch (error) {
+            console.error('Error fetching video progress:', error);
         }
     };
 
@@ -77,23 +99,54 @@ const VideoPlayer = () => {
     };
 
     const saveVideoProgress = async (video, progress, fullWatched) => {
-        if (!video || !video.id) {
+        if (!video || !video.id || !userUid || !courseId) {
+           
             return;
         }
-
-        const videoProgressRef = doc(db, 'users', userUid, 'courses', courseId, 'videoProgress', video.id);
-        await setDoc(videoProgressRef, {
-            progress,
-            fullWatched: progress === 100,
-            updatedAt: new Date(),
-        }, { merge: true });
+    
+        try {
+            const videoProgressRef = doc(db, 'users', userUid, 'courses', courseId, 'videoProgress', video.id);
+            const videoProgressDoc = await getDoc(videoProgressRef);
+    
+            let currentProgress = 0;
+            let wasFullyWatched = false;
+    
+            if (videoProgressDoc.exists()) {
+                const data = videoProgressDoc.data();
+                currentProgress = data.progress || 0;
+                wasFullyWatched = data.fullWatched || false;
+            }
+    
+            if (wasFullyWatched) {
+                return; // Don't update if it was already fully watched
+            }
+    
+            // Ensure the video is marked as completed if it was previously completed
+            if (completedVideos.includes(video.id)) {
+                progress = 100;
+                fullWatched = true;
+            } else if (fullWatched) {
+                // If watched fully for the first time, add to completed videos
+                progress = 100;
+                setCompletedVideos((prevCompleted) => [...prevCompleted, video.id]);
+            }
+    
+         
+    
+            // Set progress and fullWatched status in Firestore
+            await setDoc(videoProgressRef, {
+                progress,
+                fullWatched: progress === 100,
+                updatedAt: new Date(),
+            }, { merge: true });
+    
+        } catch (error) {
+            console.error('Error saving video progress:', error);
+        }
     };
-
+    
     const handlePlaybackSpeedChange = (speed) => {
         setPlaybackSpeed(speed);
-        if (videoRef.current) {
-            videoRef.current.playbackRate = speed;
-        }
     };
 
     if (loading) {

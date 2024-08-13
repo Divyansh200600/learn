@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { db, auth } from '../../../../utils/Firebase/firebaseConfig';
-import { useRouter, useParams } from 'next/navigation';  // Import useParams for route parameters
+import { useRouter, useParams } from 'next/navigation';
 import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
 
 const VideoSelector = () => {
-    const { courseId } = useParams();  // Access courseId from useParams
+    const { courseId } = useParams();
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [expandedChapters, setExpandedChapters] = useState({});
     const [expandedTopics, setExpandedTopics] = useState({});
@@ -15,8 +15,8 @@ const VideoSelector = () => {
     const [completedVideos, setCompletedVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedVideo, setSelectedVideo] = useState(null);  // Add state for selectedVideo
-    const router = useRouter();  // Use router for navigation
+    const [selectedVideo, setSelectedVideo] = useState(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (!courseId) {
@@ -33,7 +33,7 @@ const VideoSelector = () => {
                 } else {
                     setUserUid(null);
                     setLoading(false);
-                    router.push('/login');
+                    router.push('/dashboard/profile');
                 }
             });
         };
@@ -43,7 +43,6 @@ const VideoSelector = () => {
     const fetchCourseData = async (courseId, uid) => {
         try {
             setLoading(true);
-            console.log('Fetching course data for courseId:', courseId);
             const courseDoc = await getDoc(doc(db, 'courses', courseId));
             
             if (!courseDoc.exists()) {
@@ -93,7 +92,6 @@ const VideoSelector = () => {
 
     const fetchVideoProgress = async (courseId, uid) => {
         try {
-            console.log('Fetching video progress for courseId:', courseId, 'userUid:', uid);
             const videoProgressCollection = collection(db, 'users', uid, 'courses', courseId, 'videoProgress');
             const videoProgressSnapshot = await getDocs(videoProgressCollection);
             const progressData = {};
@@ -124,8 +122,13 @@ const VideoSelector = () => {
     };
 
     const handleVideoClick = (video) => {
-        setSelectedVideo(video);  // Set selected video
-        const videoLinks = selectedCourse.chapters.flatMap(chapter => 
+        if (!canWatch(video)) {
+            alert('You must complete previous videos before watching this one.');
+            return;
+        }
+
+        setSelectedVideo(video);
+        const videoLinks = selectedCourse.chapters.flatMap(chapter =>
             chapter.topics.flatMap(topic => topic.videoLinks)
         );
         const initialIndex = videoLinks.findIndex(v => v.id === video.id);
@@ -137,8 +140,30 @@ const VideoSelector = () => {
     };
 
     const canWatch = (video) => {
-        // Add logic to determine if the video can be watched
-        return true;
+        if (completedVideos.includes(video.id)) {
+            return true;
+        }
+
+        const firstVideo = selectedCourse.chapters.flatMap(chapter =>
+            chapter.topics.flatMap(topic => topic.videoLinks)
+        )[0];
+        
+        if (video.id === firstVideo.id) {
+            return true;
+        }
+
+        let previousVideo = null;
+        for (const chapter of selectedCourse.chapters) {
+            for (const topic of chapter.topics) {
+                for (const item of topic.videoLinks) {
+                    if (item.id === video.id) {
+                        return previousVideo === null || completedVideos.includes(previousVideo.id);
+                    }
+                    previousVideo = item;
+                }
+            }
+        }
+        return false;
     };
 
     if (loading) {
@@ -155,7 +180,7 @@ const VideoSelector = () => {
 
     return (
         <div className="min-h-screen p-8 bg-gray-100">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={() => router.push('/courses')}>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={() => router.push('/dashboard/my-course')}>
                 Back to My Courses
             </button>
             <div className="flex flex-col space-y-4">
@@ -189,12 +214,13 @@ const VideoSelector = () => {
                                                         {topic.videoLinks.map((video) => (
                                                             <div
                                                                 key={video.id}
-                                                                className={`p-2 rounded-lg cursor-pointer transition-colors duration-300 ${selectedVideo?.link === video.link
+                                                                className={`p-2 rounded-lg cursor-pointer transition-colors duration-300 ${
+                                                                    selectedVideo?.id === video.id
                                                                         ? 'bg-blue-700 text-white border-2 border-blue-500'
                                                                         : !canWatch(video)
                                                                             ? 'bg-gray-500 text-gray-400 cursor-not-allowed'
                                                                             : 'bg-gray-700 text-gray-300 hover:bg-blue-500 hover:text-white'
-                                                                    }`}
+                                                                }`}
                                                                 onClick={() => handleVideoClick(video)}
                                                             >
                                                                 <div className="flex justify-between items-center">
