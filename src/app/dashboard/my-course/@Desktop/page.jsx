@@ -17,6 +17,11 @@ const DesktopMyCourses = () => {
   const userUid = useRef(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+
+  useEffect(() => {
     const initializeTilt = () => {
       if (tiltRefs.current) {
         tiltRefs.current.forEach((el) => {
@@ -27,6 +32,7 @@ const DesktopMyCourses = () => {
             });
           }
         });
+        window.scrollTo(0, 0);
       }
     };
 
@@ -38,6 +44,7 @@ const DesktopMyCourses = () => {
             el.vanillaTilt.destroy();
           }
         });
+        window.scrollTo(0, 0);
       }
     };
   }, [courses]);

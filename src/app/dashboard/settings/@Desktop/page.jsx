@@ -1,8 +1,20 @@
-import React from 'react';
+'use client'
+import React, { useEffect } from 'react';
 import PassChanger from '../../../../components/SettingsComponent/passChange';
 import Logout from '../../../../components/SettingsComponent/logout';
 
 export default function SettingsDesktopPage() {
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    
+    // Set a timeout to ensure the scroll happens after rendering
+    const timeoutId = setTimeout(scrollToTop, 50);
+
+    return () => clearTimeout(timeoutId); // Clean up the timeout if the component unmounts
+  }, []);
+
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       <h1 className="text-5xl text-black mb-8">Settings ⚙️</h1>

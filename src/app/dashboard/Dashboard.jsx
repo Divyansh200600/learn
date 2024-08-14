@@ -68,6 +68,11 @@ const Dashboard = () => {
     if (path.includes('achievements')) setActiveTab('achievements'); // Add achievements check
   }, []);
 
+  useEffect(() => {
+    // Scroll to top when activeTab changes
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   if (!isDesktop) {
     return null; // Render nothing if not desktop
   }
@@ -186,7 +191,7 @@ const Dashboard = () => {
 
 const Courses = () => (
   <div>
-    <h2 className="text-4xl font-extrabold mb-6 animate-fade-in-up">Your Courses</h2>
+    <h2 className="text-4xl font-extrabold mb-6 animate-fade-in-up">Select one</h2>
     {/* Add content for Courses here */}
   </div>
 );

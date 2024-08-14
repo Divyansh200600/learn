@@ -13,6 +13,18 @@ const DesktopAchievementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  //page open from the top
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    
+    // Set a timeout to ensure the scroll happens after rendering
+    const timeoutId = setTimeout(scrollToTop, 50);
+
+    return () => clearTimeout(timeoutId); // Clean up the timeout if the component unmounts
+  }, []);
+
   // Fetch courses for selection
   useEffect(() => {
     const fetchCourses = async () => {

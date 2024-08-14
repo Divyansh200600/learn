@@ -8,8 +8,10 @@ export default function DesktopDoubtSolving() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     setLoading(true); // Set loading to true when the component mounts
   }, [pathname]);
+ 
 
   const handleLoad = () => {
     setLoading(false); // Set loading to false when the iframe has loaded

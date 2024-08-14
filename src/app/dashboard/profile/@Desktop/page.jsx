@@ -20,6 +20,18 @@ export default function DekstopProfileScreen() {
   const [editedDetails, setEditedDetails] = useState(userDetails);
   const [newSkill, setNewSkill] = useState('');
 
+   useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    
+    // Set a timeout to ensure the scroll happens after rendering
+    const timeoutId = setTimeout(scrollToTop, 50);
+
+    return () => clearTimeout(timeoutId); // Clean up the timeout if the component unmounts
+  }, []);
+  
+
   useEffect(() => {
     const fetchUserData = async (uid) => {
       try {
