@@ -36,7 +36,7 @@ const DesktopPZHoF = () => {
           name: doc.data().name,
         }));
         setCourses(coursesList);
-        console.log('Courses fetched successfully:', coursesList);
+       
       } catch (error) {
         console.error('Error fetching courses:', error);
         setError('Error fetching courses.');
@@ -79,7 +79,7 @@ const DesktopPZHoF = () => {
           }
         }
   
-        console.log(`Total number of videos in the course: ${totalVideos}`);
+      
   
         const progressPromises = studentsList.map(async (student) => {
           const userCoursesSnapshot = await getDocs(collection(db, 'users', student.id, 'courses'));
@@ -97,8 +97,8 @@ const DesktopPZHoF = () => {
               }
             });
   
-            // Log total progress for the student
-            console.log(`Total progress for student ${student.name}: ${totalProgress}`);
+          
+          
   
             return { ...student, progress: totalProgress };
           } else {
@@ -113,7 +113,6 @@ const DesktopPZHoF = () => {
         const sortedStudents = studentProgressData.sort((a, b) => b.progress - a.progress);
   
         setStudentProgressList(sortedStudents);
-        console.log('Students and their overall progress:', sortedStudents);
       } catch (error) {
         console.error('Error fetching students or progress:', error);
         setError('Error fetching students or progress.');

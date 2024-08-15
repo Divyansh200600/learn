@@ -6,10 +6,7 @@ const Header = ({ setActiveTab, isSidebarOpen }) => {
   const notificationsRef = useRef(null);
 
   const notifications = [
-    'Notification 1',
-    'Notification 2',
-    'Notification 3',
-    'Notification 4',
+    
   ];
 
   const handleNotificationsClick = () => {
