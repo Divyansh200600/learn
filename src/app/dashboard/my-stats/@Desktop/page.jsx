@@ -11,6 +11,7 @@ export default function DesktopMyStatsPage() {
   const [courseDetails, setCourseDetails] = useState(null);
   const [videoProgress, setVideoProgress] = useState({});
   const [totalCourseProgress, setTotalCourseProgress] = useState(0);
+  const [expandedChapters, setExpandedChapters] = useState({}); // Track expanded chapters
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -89,17 +90,12 @@ export default function DesktopMyStatsPage() {
           setVideoProgress(videoProgressData);
           setTotalCourseProgress(courseProgressPercentage);
 
-          // Log detailed video progress data
-        
-          courseData.chapters.forEach((chapter, chapterIndex) => {
-            chapter.topics.forEach((topic, topicIndex) => {
-              topic.videoLinks.forEach((video, videoIndex) => {
-                const videoKey = `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}`;
-                const progress = videoProgressData[videoKey] || 0;
-              
-              });
-            });
-          });
+          // Initialize the expanded state with the first chapter expanded
+          const initialExpandedChapters = courseData.chapters.reduce((acc, chapter, index) => {
+            acc[chapter.chapterName] = index === 0; // Expand only the first chapter by default
+            return acc;
+          }, {});
+          setExpandedChapters(initialExpandedChapters);
         }
       } else {
         console.log("Course not found");
@@ -112,21 +108,21 @@ export default function DesktopMyStatsPage() {
     }
   };
 
+  const handleToggleChapter = (chapterName) => {
+    setExpandedChapters((prevExpanded) => ({
+      ...prevExpanded,
+      [chapterName]: !prevExpanded[chapterName],
+    }));
+  };
+
   const renderVideos = (videoLinks, chapterIndex, topicIndex) => {
     if (!Array.isArray(videoLinks) || videoLinks.length === 0) return <li>No videos available</li>;
-  
+
     return videoLinks.map((video, index) => {
-      // Use chapterIndex and topicIndex directly if they are passed
       const videoIndex = index + 1; // Index for the video in the current topic
-      
-      // Construct the key based on chapter, topic, and video index
       const videoKey = `video-${chapterIndex}-${topicIndex}-${videoIndex}`;
-  
-      // Get the progress for this video
       const progress = videoProgress[videoKey] || 0;
-  
-     
-  
+
       return (
         <li key={videoKey} className="mb-4">
           <div className="font-semibold">Video {videoIndex}</div>
@@ -140,20 +136,16 @@ export default function DesktopMyStatsPage() {
             <span className="ml-2">{progress.toFixed(2)}%</span>
           </div>
           <div className="mt-2">
-            {/* Render video description */}
-          
+            <div dangerouslySetInnerHTML={{ __html: video.description }} />
           </div>
-         
         </li>
       );
     });
   };
-  
-  
 
   const renderTopics = (topics, chapterIndex) => {
     if (!Array.isArray(topics) || topics.length === 0) return <li>No topics available</li>;
-  
+
     return topics.map((topic, index) => (
       <li key={index} className="mt-2">
         <strong>{topic.topicName}</strong>
@@ -163,21 +155,34 @@ export default function DesktopMyStatsPage() {
       </li>
     ));
   };
-  
+
   const renderChapters = (chapters) => {
     if (!Array.isArray(chapters) || chapters.length === 0) return <li>No chapters available</li>;
-  
-    return chapters.map((chapter, chapterIndex) => (
-      <li key={chapterIndex} className="mt-4">
-        <h4 className="text-lg font-semibold">{chapter.chapterName}</h4>
-        <ul className="ml-4">
-          {renderTopics(chapter.topics, chapterIndex + 1)}
-        </ul>
-      </li>
-    ));
+
+    return chapters.map((chapter, chapterIndex) => {
+      const isExpanded = expandedChapters[chapter.chapterName] || false;
+
+      return (
+        <li key={chapterIndex} className="mt-4">
+          <div className="flex items-center">
+            <h4 className="text-lg font-semibold">{chapter.chapterName}</h4>
+            <button
+              onClick={() => handleToggleChapter(chapter.chapterName)}
+              className="ml-2 text-blue-500"
+            >
+              {isExpanded ? 'Collapse' : 'Expand'}
+            </button>
+          </div>
+          {isExpanded && (
+            <ul className="ml-4">
+              {renderTopics(chapter.topics, chapterIndex + 1)}
+            </ul>
+          )}
+        </li>
+      );
+    });
   };
-  
-  
+
   return (
     <div className="p-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 min-h-screen">
       <h1 className="text-2xl mb-6">My Stats Page</h1>
