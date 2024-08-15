@@ -164,7 +164,7 @@ const PhonePZHoF = () => {
 
       <div>
         <h2 className="text-3xl font-semibold mb-4 text-center text-indigo-800">🎓 Other Students 🌟</h2>
-        <ul className="list-disc list-inside space-y-4">
+        <ul className="list-disc list-inside space-y-4 pb-[calc(60px+1rem)]">
           {otherStudents.map((student, index) => (
             <motion.li
               key={index}

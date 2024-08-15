@@ -127,7 +127,7 @@ const Dashboard = () => {
             {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
           </button>
         </div>
-        {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome {username}</div>}
+        {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome👋{username}</div>}
         <div className="flex flex-col mt-8 space-y-4">
           <button
             onClick={() => handleTabChange('my-course')}

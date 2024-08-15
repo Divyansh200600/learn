@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig'; // Adjust the import path as needed
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { CircularProgress, LinearProgress } from '@mui/material'; // For modern progress bars
+import { CircularProgress, LinearProgress, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Tooltip } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import PauseCircleIcon from '@mui/icons-material/PauseCircle';
+import { motion } from 'framer-motion';
 
 export default function DesktopMyStatsPage() {
   const [courses, setCourses] = useState([]);
@@ -11,7 +15,6 @@ export default function DesktopMyStatsPage() {
   const [courseDetails, setCourseDetails] = useState(null);
   const [videoProgress, setVideoProgress] = useState({});
   const [totalCourseProgress, setTotalCourseProgress] = useState(0);
-  const [expandedChapters, setExpandedChapters] = useState({}); // Track expanded chapters
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -22,11 +25,8 @@ export default function DesktopMyStatsPage() {
           return;
         }
 
-        // Fetch the user's courses subcollection
         const coursesCollectionRef = collection(db, 'users', user.uid, 'courses');
         const coursesSnapshot = await getDocs(coursesCollectionRef);
-
-        // Retrieve all course IDs
         const enrolledCourses = coursesSnapshot.docs.map(doc => doc.id);
 
         if (enrolledCourses.length === 0) {
@@ -34,7 +34,6 @@ export default function DesktopMyStatsPage() {
           return;
         }
 
-        // Fetch each course's data from the main courses collection
         const coursesArray = await Promise.all(
           enrolledCourses.map(async (courseId) => {
             const courseSnap = await getDoc(doc(db, 'courses', courseId));
@@ -45,7 +44,6 @@ export default function DesktopMyStatsPage() {
           })
         );
 
-        // Filter out any null values in case a course doesn't exist
         setCourses(coursesArray.filter(course => course !== null));
       } catch (error) {
         console.error("Error fetching user data: ", error);
@@ -65,7 +63,6 @@ export default function DesktopMyStatsPage() {
         const courseData = courseSnap.data();
         setCourseDetails(courseData);
 
-        // Fetch video progress
         const user = auth.currentUser;
         if (user) {
           const videoProgressRef = collection(db, 'users', user.uid, 'courses', courseId, 'videoProgress');
@@ -79,7 +76,6 @@ export default function DesktopMyStatsPage() {
             totalProgress += data.progress || 0;
           });
 
-          // Calculate total videos count
           const totalVideosCount = courseData.chapters.reduce((count, chapter) => {
             return count + chapter.topics.reduce((topicCount, topic) => {
               return topicCount + (topic.videoLinks ? topic.videoLinks.length : 0);
@@ -89,13 +85,6 @@ export default function DesktopMyStatsPage() {
           const courseProgressPercentage = totalVideosCount > 0 ? (totalProgress / (totalVideosCount * 100)) * 100 : 0;
           setVideoProgress(videoProgressData);
           setTotalCourseProgress(courseProgressPercentage);
-
-          // Initialize the expanded state with the first chapter expanded
-          const initialExpandedChapters = courseData.chapters.reduce((acc, chapter, index) => {
-            acc[chapter.chapterName] = index === 0; // Expand only the first chapter by default
-            return acc;
-          }, {});
-          setExpandedChapters(initialExpandedChapters);
         }
       } else {
         console.log("Course not found");
@@ -108,35 +97,25 @@ export default function DesktopMyStatsPage() {
     }
   };
 
-  const handleToggleChapter = (chapterName) => {
-    setExpandedChapters((prevExpanded) => ({
-      ...prevExpanded,
-      [chapterName]: !prevExpanded[chapterName],
-    }));
-  };
-
   const renderVideos = (videoLinks, chapterIndex, topicIndex) => {
     if (!Array.isArray(videoLinks) || videoLinks.length === 0) return <li>No videos available</li>;
 
     return videoLinks.map((video, index) => {
-      const videoIndex = index + 1; // Index for the video in the current topic
+      const videoIndex = index + 1; 
       const videoKey = `video-${chapterIndex}-${topicIndex}-${videoIndex}`;
       const progress = videoProgress[videoKey] || 0;
 
       return (
         <li key={videoKey} className="mb-4">
-          <div className="font-semibold">Video {videoIndex}</div>
+          <div className="font-semibold text-gray-800">Video {videoIndex}</div>
           <div className="flex items-center mt-2">
             <LinearProgress
               variant="determinate"
               value={progress}
               className="w-full"
-              sx={{ height: '10px', borderRadius: '5px' }}
+              sx={{ height: '8px', borderRadius: '4px' }}
             />
-            <span className="ml-2">{progress.toFixed(2)}%</span>
-          </div>
-          <div className="mt-2">
-            <div dangerouslySetInnerHTML={{ __html: video.description }} />
+            <span className="ml-2 text-gray-700">{progress.toFixed(2)}%</span>
           </div>
         </li>
       );
@@ -148,7 +127,7 @@ export default function DesktopMyStatsPage() {
 
     return topics.map((topic, index) => (
       <li key={index} className="mt-2">
-        <strong>{topic.topicName}</strong>
+        <strong className="text-gray-800">{topic.topicName}</strong>
         <ul className="ml-6 list-disc">
           {renderVideos(topic.videoLinks, chapterIndex, index + 1)}
         </ul>
@@ -160,39 +139,31 @@ export default function DesktopMyStatsPage() {
     if (!Array.isArray(chapters) || chapters.length === 0) return <li>No chapters available</li>;
 
     return chapters.map((chapter, chapterIndex) => {
-      const isExpanded = expandedChapters[chapter.chapterName] || false;
-
       return (
-        <li key={chapterIndex} className="mt-4">
-          <div className="flex items-center">
-            <h4 className="text-lg font-semibold">{chapter.chapterName}</h4>
-            <button
-              onClick={() => handleToggleChapter(chapter.chapterName)}
-              className="ml-2 text-blue-500"
-            >
-              {isExpanded ? 'Collapse' : 'Expand'}
-            </button>
-          </div>
-          {isExpanded && (
-            <ul className="ml-4">
+        <Accordion key={chapterIndex} defaultExpanded={chapterIndex === 0}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: '#f5f5f5' }}>
+            <Typography className="text-lg font-semibold">{chapter.chapterName}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ul className="ml-4 list-disc">
               {renderTopics(chapter.topics, chapterIndex + 1)}
             </ul>
-          )}
-        </li>
+          </AccordionDetails>
+        </Accordion>
       );
     });
   };
 
   return (
-    <div className="p-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 min-h-screen">
-      <h1 className="text-2xl mb-6">My Stats Page</h1>
-      <div>
-        <label htmlFor="courseSelector" className="block mb-2">Select a Course:</label>
+    <div className="p-6 bg-gradient-to-r from-indigo-100 via-teal-100 to-green-100 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Stats Page</h1>
+      <div className="mb-6">
+        <label htmlFor="courseSelector" className="block mb-2 text-gray-700">Select a Course:</label>
         <select
           id="courseSelector"
           value={selectedCourseId}
           onChange={handleCourseSelection}
-          className="p-2 border rounded w-full"
+          className="p-3 border border-gray-300 rounded-lg shadow-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         >
           <option value="" disabled>Select a course</option>
           {courses.length > 0 ? (
@@ -205,24 +176,29 @@ export default function DesktopMyStatsPage() {
         </select>
       </div>
       {courseDetails && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold">{courseDetails.name}</h2>
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold">Total Course Progress</h3>
-            <div className="flex items-center mb-6">
-              <CircularProgress
-                variant="determinate"
-                value={totalCourseProgress}
-                size={80}
-                thickness={4}
-              />
-              <span className="ml-4 text-xl">{totalCourseProgress.toFixed(2)}%</span>
-            </div>
-            <h3 className="text-lg font-semibold">Chapters</h3>
-            <ul className="ml-4 list-decimal">
+        <div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-semibold text-gray-800">{courseDetails.name}</h2>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-700">Total Course Progress</h3>
+              <div className="flex items-center mb-6">
+                <CircularProgress
+                  variant="determinate"
+                  value={totalCourseProgress}
+                  size={90}
+                  thickness={5}
+                  sx={{ color: '#4caf50' }}
+                />
+                <span className="ml-4 text-xl text-gray-800">{totalCourseProgress.toFixed(2)}%</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700">Chapters</h3>
               {renderChapters(courseDetails.chapters)}
-            </ul>
-          </div>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>
