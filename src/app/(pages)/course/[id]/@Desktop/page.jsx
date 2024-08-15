@@ -252,29 +252,38 @@ export default function CourseDesktopScreen({ params }) {
             </div>
           </div>
           <div className="flex justify-between items-center">
-            <button onClick={openSyllabusModal} className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors">
-              View Syllabus
-            </button>
-          </div>
-        </div>
+        <button
+          onClick={openSyllabusModal}
+          className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors"
+        >
+          View Syllabus
+        </button>
       </div>
+
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
-            <h3 className="text-2xl font-bold mb-4">Syllabus</h3>
-            <button onClick={closeSyllabusModal} className="absolute top-4 right-4 text-xl font-bold">
-              &times;
-            </button>
-            <ul className="list-disc pl-5 space-y-2">
-              {courseData.chapters.map((chapter, index) => (
-                <li key={index} className="text-lg text-gray-700">
-                  {chapter}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-0 rounded-lg shadow-lg max-w-4xl w-full h-[80vh] relative overflow-hidden">
+      <button
+        onClick={closeSyllabusModal}
+        className="absolute top-4 right-4 text-xl font-bold z-10 bg-white p-2 rounded-full"
+      >
+        &times;
+      </button>
+      <iframe
+  src={`${courseData.syllabusPdf}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+  className="w-full h-full"
+  title="Syllabus PDF"
+  style={{ border: 'none' }}
+></iframe>
+
     </div>
+  </div>
+)}
+
+    </div>
+    </div>
+    </div>
+
+
   );
 }

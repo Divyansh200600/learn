@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { CogIcon } from '@heroicons/react/outline';
+import {  FaAward } from 'react-icons/fa';
+
 import { db, auth, storage } from '../../../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -198,6 +200,13 @@ export default function PhoneProfileScreen() {
           onClick={() => router.push('/dashboard/settings')}
         >
           <CogIcon className="w-6 h-6" />
+        </button>
+
+        <button
+          className="relative top-0 left-11 bg-transparent text-gray-600 hover:text-blue-600 transition-colors"
+          onClick={() => router.push('/dashboard/pz-hall-of-fame')}
+        >
+          <FaAward className="w-6 h-6" />
         </button>
 
         {!isEditing ? (

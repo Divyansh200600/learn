@@ -1,9 +1,10 @@
 'use client';
+
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation'; // For programmatic navigation
 import { useEffect, useState } from 'react';
-import { FaBars, FaBook, FaChartLine, FaCog, FaArrowAltCircleLeft, FaUser, FaAward } from 'react-icons/fa';
+import { FaBars, FaBook,  FaCog, FaArrowAltCircleLeft, FaUser, FaAward,FaChartBar } from 'react-icons/fa';
 import { IoChatbubblesOutline } from "react-icons/io5"; // Added FaAward for Achievements
 import { auth, db } from '../../utils/Firebase/firebaseConfig';
 import Header from './Header';
@@ -11,9 +12,10 @@ import DesktopMyCourses from './my-course/@Desktop/page';
 import NotificationDesktopScreen from './notification/layout';
 import DekstopProfileScreen from './profile/@Desktop/page';
 import SettignDesktopPage from './settings/@Desktop/page';
-import AchievementsDesktopPage from './achievements/@Desktop/page'; // Import Achievements component
+import PZhallOfFame from './pz-hall-of-fame/@Desktop/page'; 
 import DiscordButton from '@/components/DiscordButton';
 import DoubtSolvingLayout from './doubt-solving/@Desktop/page';
+import Mystats from './my-stats/@Desktop/page';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('courses');
@@ -65,7 +67,8 @@ const Dashboard = () => {
     if (path.includes('profile')) setActiveTab('Profile');
     if (path.includes('settings')) setActiveTab('settings');
     if (path.includes('doubt-solving')) setActiveTab('doubt-solving');
-    if (path.includes('achievements')) setActiveTab('achievements'); // Add achievements check
+    if (path.includes('my-stats')) setActiveTab('my-stats');
+    if (path.includes('pz-hall-of-fame')) setActiveTab('pz-hall-of-fame'); 
   }, []);
 
   useEffect(() => {
@@ -97,8 +100,10 @@ const Dashboard = () => {
         return <DekstopProfileScreen />;
       case 'settings':
         return <SettignDesktopPage />;
-      case 'achievements':
-        return <AchievementsDesktopPage />;
+        case 'my-stats':
+        return <Mystats />;
+      case 'pz-hall-of-fame':
+        return <PZhallOfFame />;
       case 'doubt-solving':
         return <DoubtSolvingLayout />;  
       default:
@@ -108,22 +113,19 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-200">
-    <div
-      className={`bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col transition-all duration-700 ease-in-out ${
-        isSidebarOpen ? 'w-1/6' : 'w-20'
-      } ${isSidebarOpen ? 'h-[calc(300vh-20px)]' : 'h-[calc(175vh-20px)'}  z-40`}
-    >
-      <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
-        {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
-        <button
-          onClick={toggleSidebar}
-          className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110"
-        >
-          {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
-        </button>
-
-
-
+      <div
+        className={`bg-gradient-to-r from-blue-900 to-indigo-900 text-white flex flex-col transition-all duration-700 ease-in-out ${
+          isSidebarOpen ? 'w-1/6' : 'w-20'
+        } ${isSidebarOpen ? 'h-[calc(300vh-20px)]' : 'h-[calc(175vh-20px)'}  z-40`}
+      >
+        <div className="p-6 text-3xl font-extrabold flex justify-between items-center">
+          {isSidebarOpen && <span className="animate-fade-in">PulseZest</span>}
+          <button
+            onClick={toggleSidebar}
+            className="text-xl transform transition-transform duration-300 ease-in-out hover:scale-110"
+          >
+            {isSidebarOpen ? <FaArrowAltCircleLeft /> : <FaBars />}
+          </button>
         </div>
         {isSidebarOpen && <div className="user ml-4 animate-fade-in">Welcome {username}</div>}
         <div className="flex flex-col mt-8 space-y-4">
@@ -145,14 +147,25 @@ const Dashboard = () => {
             <FaUser className="mr-3" />
             {isSidebarOpen && 'Profile'}
           </button>
+
           <button
-            onClick={() => handleTabChange('achievements')}
+            onClick={() => handleTabChange('my-stats')}
             className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
-              activeTab === 'achievements' ? 'bg-indigo-400 shadow-lg' : ''
+              activeTab === 'my-stats' ? 'bg-indigo-400 shadow-lg' : ''
+            }`}
+          >
+            <FaChartBar className="mr-3" />
+            {isSidebarOpen && 'My-Stats'}
+          </button>
+
+          <button
+            onClick={() => handleTabChange('pz-hall-of-fame')}
+            className={`flex items-center p-4 hover:bg-indigo-400 rounded-lg transition-all duration-500 ease-in-out transform hover:translate-x-1 ${
+              activeTab === 'pz-hall-of-fame' ? 'bg-indigo-400 shadow-lg' : ''
             }`}
           >
             <FaAward className="mr-3" />
-            {isSidebarOpen && 'Achievements'}
+            {isSidebarOpen && 'PZ Hall Of Fame'}
           </button>
 
           <button
@@ -162,7 +175,7 @@ const Dashboard = () => {
             }`}
           >
             <IoChatbubblesOutline className="mr-3" />
-            {isSidebarOpen && 'doubt-solving'}
+            {isSidebarOpen && 'Doubt Solving'}
           </button>
           
           <button
@@ -175,13 +188,10 @@ const Dashboard = () => {
             {isSidebarOpen && 'Settings'}
           </button>
 
-        
-
-          <DiscordButton/>
-         
+          <DiscordButton />
         </div>
       </div>
-     <div className={`flex-1 ml-${isSidebarOpen ? '1/6' : '20'} transition-all duration-700 ease-in-out relative`} style={{ zIndex: 10 }}>
+      <div className={`flex-1 ml-${isSidebarOpen ? '1/6' : '20'} transition-all duration-700 ease-in-out relative`} style={{ zIndex: 10 }}>
         <Header setActiveTab={setActiveTab} />
         <div className="p-4 text-black">{renderContent()}</div>
       </div>

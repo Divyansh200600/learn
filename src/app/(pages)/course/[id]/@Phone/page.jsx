@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { ArrowLeftIcon, PauseIcon, PlayIcon } from "@heroicons/react/solid";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -18,7 +18,7 @@ export default function CoursePhoneScreen({ params }) {
     salePrice: '',
     description: '',
     whatYouLearn: '',
-    courseDuration:'',
+    courseDuration: '',
     courseRequirements: '',
     instructor: '',
     duration: '',
@@ -33,6 +33,7 @@ export default function CoursePhoneScreen({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchased, setIsPurchased] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
 
   useEffect(() => {
     const handleScroll = () => {
@@ -130,6 +131,15 @@ export default function CoursePhoneScreen({ params }) {
     }
   }, [activeSale]);
 
+
+  const openSyllabusModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeSyllabusModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-blue-200 pt-8 pb-16">
       <header
@@ -186,20 +196,21 @@ export default function CoursePhoneScreen({ params }) {
             </div>
           )}
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <br></br>
-              <br></br>
-              <p className="text-2xl font-bold text-green-600 mb-4">{courseData.courseLevel}</p>
-              
+            <div className="flex-1 text-2xl font-bold text-green-600">
+              {courseData.courseLevel}
             </div>
-            
-            <div className="text-3xl font-bold text-blue-600 mb-4">
+            <div className="flex-1 text-1xl font-bold text-blue-600 text-right">
               {regularPrice && (
                 <span className="line-through">₹{formatter.format(regularPrice)}</span>
-              )} ₹{formatter.format(displayPrice)}
+              )} 
             </div>
+           
+            <div className="flex-1 text-3xl font-bold text-blue-600 text-right">
             
+              {displayPrice}/-
+            </div>
           </div>
+
           <p className="text-1xl font-bold text-orange-600 mb-4">Course Duration: {courseData.courseDuration}</p>
           <div className="mb-6">
             <h3 className="text-2xl font-semibold text-blue-600 mb-2">Description</h3>
@@ -216,12 +227,11 @@ export default function CoursePhoneScreen({ params }) {
           <div className="mb-6">
             <h3 className="text-2xl font-semibold text-blue-600 mb-2">Additional Information</h3>
             <div className="flex justify-start items-center">
-            <div className="mr-6">
+              <div className="mr-6">
                 <p className="text-lg text-gray-700">
                   <span className="font-semibold text-black">Instructor:</span> Prof. Rishab Chauhan
                 </p>
               </div>
-            
               <div className="mr-6">
                 <p className="text-lg text-gray-700">
                   <span className="font-semibold text-black">Language:</span> Hindi
@@ -235,6 +245,11 @@ export default function CoursePhoneScreen({ params }) {
               </div>
             </div>
           </div>
+         
+          <button onClick={openSyllabusModal} className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors w-full mb-4">
+              View Syllabus
+            </button>
+      
           {isPurchased ? (
             <Link href="/dashboard/my-course" passHref>
               <button className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors w-full">
@@ -250,6 +265,23 @@ export default function CoursePhoneScreen({ params }) {
           )}
         </div>
       </div>
+        {/* Modal for Syllabus */}
+        {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3">
+            <button onClick={closeSyllabusModal} className="absolute top-2 right-2 text-blue-600 text-2xl">
+              &times;
+            </button>
+            <iframe
+             src={`${courseData.syllabusPdf}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+              width="100%"
+              height="600px"
+              className="rounded-b-lg"
+            ></iframe>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
