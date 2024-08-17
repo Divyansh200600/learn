@@ -6,6 +6,7 @@ import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
 import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import Duration from '../../duration/page'
 
 const VideoPlayer = () => {
   const { courseId } = useParams();
@@ -342,6 +343,7 @@ const VideoPlayer = () => {
       <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={handleBackToCourses}>
         Back to My Courses
       </button>
+      <Duration/>
       <div className="flex space-x-4 mb-4">
         <h2 className="text-3xl font-bold text-gray-800">{course.name}</h2>
       </div>

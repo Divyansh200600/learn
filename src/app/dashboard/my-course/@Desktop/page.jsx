@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, getDocs, runTransaction,getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import VanillaTilt from 'vanilla-tilt';
@@ -19,7 +19,6 @@ const DesktopMyCourses = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
 
   useEffect(() => {
     const initializeTilt = () => {
@@ -95,7 +94,7 @@ const DesktopMyCourses = () => {
                 chapter.topics.map(async (topic, topicIndex) => {
                   const videoLinks = topic.videoLinks.map((video, videoIndex) => ({
                     ...video,
-                    id: `video-${chapterIndex+1}-${topicIndex+1}-${videoIndex+1}` // Ensuring ID format
+                    id: `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}` // Ensuring ID format
                   }));
                   return {
                     ...topic,
@@ -161,11 +160,81 @@ const DesktopMyCourses = () => {
     }
   };
 
+  const checkAndUpdateUserInactivity = async (uid) => {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const userDocRef = doc(db, 'users', uid);
+        const userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists()) {
+          return;
+        }
+
+        const userData = userDoc.data();
+        const currentDate = new Date();
+
+        if (!userData.activeDate || isNaN(new Date(userData.activeDate).getTime())) {
+          transaction.update(userDocRef, {
+            activeDate: currentDate.toISOString(),
+          });
+          return;
+        }
+
+        const activeDate = new Date(userData.activeDate);
+        const lastEmailDate = new Date(userData.lastEmailDate || 0);
+
+        const diffTime = Math.abs(currentDate - activeDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 3) {
+          const timeSinceLastEmail = Math.abs(currentDate - lastEmailDate);
+          const diffDaysSinceLastEmail = Math.ceil(timeSinceLastEmail / (1000 * 60 * 60 * 24));
+
+          if (diffDaysSinceLastEmail >= 1 && !userData.emailSent && !userData.lock) {
+            // Set a lock to prevent concurrent email sends
+            transaction.update(userDocRef, { lock: true });
+
+            // Perform email sending logic
+            const response = await fetch('https://pz-api-system.pulsezest.com/api/send-inactive-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: userData.name,
+                email: userData.email,
+              }),
+            });
+
+            if (response.ok) {
+              // Update the user document only if email was sent successfully
+              transaction.update(userDocRef, {
+                lastEmailDate: currentDate.toISOString(),
+                emailSent: true,
+                lock: false,
+              });
+            } else {
+              const errorBody = await response.text();
+              console.error('Email sending failed:', errorBody);
+              transaction.update(userDocRef, { lock: false });
+            }
+          } else {
+            if (userData.lock) {
+              // Release the lock if it was set
+              transaction.update(userDocRef, { lock: false });
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error in checkAndUpdateUserInactivity:', error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         userUid.current = user.uid;
         fetchUserCourses(user.uid);
+        checkAndUpdateUserInactivity(user.uid); // Check user inactivity
       } else {
         setCourses([]);
         setLoading(false);
@@ -185,22 +254,21 @@ const DesktopMyCourses = () => {
     <div className="min-h-screen p-8">
       <h1 className="text-6xl font-bold text-black mb-12 text-center">My Courses</h1>
       {courses.length === 0 ? (
-       <div className="relative min-h-screen flex items-center justify-center">
-       <div
-         className="bg-white p-8 rounded-lg shadow-lg text-center"
-         style={{ marginTop: '-10%', transform: 'translateY(-50%)' }}
-       >
-         <h2 className="text-3xl font-bold mb-4">No Courses Available</h2>
-         <p className="text-gray-600 mb-4">It looks like you don&apos;t have any courses yet.</p>
-
-         <p className="text-gray-600 mb-4">Browse our catalog and find courses that interest you!</p>
-         <button
-           className="bg-blue-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-600 transition-colors duration-300"
-           onClick={() => router.push('/home')}
-         >
-           Explore Courses
-         </button>
-       </div>
+        <div className="relative min-h-screen flex items-center justify-center">
+          <div
+            className="bg-white p-8 rounded-lg shadow-lg text-center"
+            style={{ marginTop: '-10%', transform: 'translateY(-50%)' }}
+          >
+            <h2 className="text-3xl font-bold mb-4">No Courses Available</h2>
+            <p className="text-gray-600 mb-4">It looks like you don&apos;t have any courses yet.</p>
+            <p className="text-gray-600 mb-4">Browse our catalog and find courses that interest you!</p>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-600 transition-colors duration-300"
+              onClick={() => router.push('/home')}
+            >
+              Explore Courses
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

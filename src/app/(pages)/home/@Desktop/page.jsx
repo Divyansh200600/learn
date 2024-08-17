@@ -79,8 +79,8 @@ const DesktopHomescreen = () => {
       <Advantage userId={userId} />
       <BootCampWebinar userId={userId} />
       <BenefitsSection userId={userId} />
-      <FacultyPage userId={userId} />
-      <StudentSection userId={userId} />
+      {/* <FacultyPage userId={userId} />
+      <StudentSection userId={userId} /> */}
       <WhyChooseUs userId={userId} />
       <Tag/>
       <JourneyPage userId={userId} />

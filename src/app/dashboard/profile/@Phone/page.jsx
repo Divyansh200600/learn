@@ -225,13 +225,7 @@ export default function PhoneProfileScreen() {
           </button>
         )}
 
-        {/* Navigate to Achievement Page */}
-        <button
-          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
-          onClick={() => router.push('/dashboard/achievements')}
-        >
-          View Achievements
-        </button>
+       
 
         <header className="text-center mb-6">
           <Image
