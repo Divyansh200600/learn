@@ -7,20 +7,20 @@ import { useEffect, useState } from 'react';
 import { auth, db, storage } from '../../../../utils/Firebase/firebaseConfig';
 
 export default function DekstopProfileScreen() {
-  const [username, setUsername] = useState('John Doe');
-  const [email, setEmail] = useState('example@gmail.com');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [userDetails, setUserDetails] = useState({
-    title: 'Innovative Thinker at PulseZest',
-    aboutMe: 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
-    skills: ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
-    profilePhoto: 'https://via.placeholder.com/200',
+    title: '',
+    aboutMe: '',
+    skills: [],
+    profilePhoto: '',
     recentActivity: []
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editedDetails, setEditedDetails] = useState(userDetails);
   const [newSkill, setNewSkill] = useState('');
 
-   useEffect(() => {
+  useEffect(() => {
     const scrollToTop = () => {
       window.scrollTo(0, 0);
     };
@@ -30,26 +30,30 @@ export default function DekstopProfileScreen() {
 
     return () => clearTimeout(timeoutId); // Clean up the timeout if the component unmounts
   }, []);
-  
 
   useEffect(() => {
     const fetchUserData = async (uid) => {
       try {
         const userDoc = doc(db, 'users', uid);
         const userSnapshot = await getDoc(userDoc);
+        
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
-          setUsername(userData.name || 'John Doe');
-          setEmail(userData.email || 'example@gmail.com');
+          
+         
+          // Default values for userDetails
           const userDetails = {
             title: userData.title || 'Innovative Thinker at PulseZest',
             aboutMe: userData.aboutMe || 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
             skills: userData.skills || ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
             profilePhoto: userData.profilePhoto || 'https://via.placeholder.com/200',
-            recentActivity: userData.recentActivity || []
+            recentActivity: Array.isArray(userData.recentActivity) ? userData.recentActivity : [] // Ensure it's an array
           };
+
           setUserDetails(userDetails);
           setEditedDetails(userDetails);
+          setUsername(userData.name ); // Ensure username is set
+          setEmail(userData.email); // Ensure email is set
 
           // Fetch courses
           const coursesRef = collection(db, 'users', uid, 'courses');
@@ -61,10 +65,13 @@ export default function DekstopProfileScreen() {
             const courseDoc = doc(db, 'courses', courseId);
             const courseSnapshot = await getDoc(courseDoc);
             if (courseSnapshot.exists()) {
+              // Safely access recentActivity
+              const note = userDetails.recentActivity.find(activity => activity.id === courseId)?.note || '';
+
               courses.push({
                 id: courseId,
                 name: courseSnapshot.data().name,
-                note: userData.recentActivity.find(activity => activity.id === courseId)?.note || '' // Fetch existing note if available
+                note: note
               });
             }
           }
@@ -86,8 +93,11 @@ export default function DekstopProfileScreen() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchUserData(user.uid);
+        setUsername(user.displayName || 'John Doe');
+        setEmail(user.email );
       } else {
         setUsername('John Doe');
+        setEmail('example@gmail.com');
       }
     });
 
@@ -185,23 +195,22 @@ export default function DekstopProfileScreen() {
             />
           )}
           <div className="ml-6">
-          <h1 className="text-4xl font-bold text-blue-600">{username}</h1>
-{isEditing ? (
-  <input
-    type="text"
-    name="title"
-    value={editedDetails.title}
-    onChange={handleInputChange}
-    className="mt-2 w-auto text-size-3 font-semibold text-gray-600 border-b-2 border-gray-300 focus:outline-none"
-    size={Math.max(editedDetails.title.length - 5, 10)} // Decrease size slightly
-    style={{ maxWidth: '90%' }} // Limit max width to 90% of the parent
-  />
-) : (
-  <p className="mt-2 text-size-3 font-semibold text-gray-600">
-    {editedDetails.title}
-  </p>
-)}
-
+            <h1 className="text-4xl font-bold text-blue-600">{username}</h1>
+            {isEditing ? (
+              <input
+                type="text"
+                name="title"
+                value={editedDetails.title}
+                onChange={handleInputChange}
+                className="mt-2 w-auto text-size-3 font-semibold text-gray-600 border-b-2 border-gray-300 focus:outline-none"
+                size={Math.max(editedDetails.title.length - 5, 10)} // Decrease size slightly
+                style={{ maxWidth: '90%' }} // Limit max width to 90% of the parent
+              />
+            ) : (
+              <p className="mt-2 text-size-3 font-semibold text-gray-600">
+                {editedDetails.title}
+              </p>
+            )}
           </div>
         </div>
         <div>
@@ -290,9 +299,7 @@ export default function DekstopProfileScreen() {
 
           <div>
             <h2 className="text-2xl font-semibold text-blue-600">Contact</h2>
-            <>
-              <p className="text-gray-700">Email: {email}</p>
-            </>
+            <p className="text-gray-700">Email: {email}</p>
           </div>
         </section>
 

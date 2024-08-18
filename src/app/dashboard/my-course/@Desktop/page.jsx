@@ -160,81 +160,83 @@ const DesktopMyCourses = () => {
     }
   };
 
-  const checkAndUpdateUserInactivity = async (uid) => {
+
+  const checkAndUpdateAllUsersInactivity = async (authUserId) => {
     try {
-      await runTransaction(db, async (transaction) => {
-        const userDocRef = doc(db, 'users', uid);
-        const userDoc = await transaction.get(userDocRef);
-
-        if (!userDoc.exists()) {
-          return;
-        }
-
-        const userData = userDoc.data();
+      const usersCollectionRef = collection(db, 'users');
+      const querySnapshot = await getDocs(usersCollectionRef);
+  
+      // Iterate over each user document
+      for (const docSnapshot of querySnapshot.docs) {
+        const userDocRef = doc(db, 'users', docSnapshot.id);
+        const userData = docSnapshot.data();
         const currentDate = new Date();
-
-        if (!userData.activeDate || isNaN(new Date(userData.activeDate).getTime())) {
-          transaction.update(userDocRef, {
-            activeDate: currentDate.toISOString(),
-          });
-          return;
-        }
-
-        const activeDate = new Date(userData.activeDate);
+        const activeDate = new Date(userData.activeDate || 0);
         const lastEmailDate = new Date(userData.lastEmailDate || 0);
-
-        const diffTime = Math.abs(currentDate - activeDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays >= 3) {
-          const timeSinceLastEmail = Math.abs(currentDate - lastEmailDate);
-          const diffDaysSinceLastEmail = Math.ceil(timeSinceLastEmail / (1000 * 60 * 60 * 24));
-
-          if (diffDaysSinceLastEmail >= 1 && !userData.emailSent && !userData.lock) {
-            // Set a lock to prevent concurrent email sends
-            transaction.update(userDocRef, { lock: true });
-
-            // Perform email sending logic
-            const response = await fetch('https://pz-api-system.pulsezest.com/api/send-inactive-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: userData.name,
-                email: userData.email,
-              }),
-            });
-
-            if (response.ok) {
-              // Update the user document only if email was sent successfully
-              transaction.update(userDocRef, {
-                lastEmailDate: currentDate.toISOString(),
-                emailSent: true,
-                lock: false,
-              });
-            } else {
-              const errorBody = await response.text();
-              console.error('Email sending failed:', errorBody);
-              transaction.update(userDocRef, { lock: false });
-            }
-          } else {
-            if (userData.lock) {
-              // Release the lock if it was set
-              transaction.update(userDocRef, { lock: false });
-            }
+  
+        await runTransaction(db, async (transaction) => {
+          // If user has no activeDate or it's invalid, set it to the current date and reset emailSent
+          if (!userData.activeDate || isNaN(activeDate.getTime())) {
+            transaction.update(userDocRef, { activeDate: currentDate.toISOString(), emailSent: false });
+            return; // Exit the transaction as we've just updated activeDate
           }
-        }
-      });
+  
+          const diffDays = Math.ceil((currentDate - activeDate) / (1000 * 60 * 60 * 24));
+          const diffDaysSinceLastEmail = Math.ceil((currentDate - lastEmailDate) / (1000 * 60 * 60 * 24));
+  
+          // If the user has been inactive for 3 or more days and email hasn't been sent, send an email
+          if (diffDays >= 3 && diffDaysSinceLastEmail >= 1 && !userData.emailSent && !userData.lock) {
+            transaction.update(userDocRef, { lock: true });
+  
+            try {
+              const response = await fetch('https://pz-api-system.pulsezest.com/api/send-inactive-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: userData.name, email: userData.email }),
+              });
+  
+              if (response.ok) {
+                transaction.update(userDocRef, {
+                  lastEmailDate: currentDate.toISOString(),
+                  emailSent: true,
+                  lock: false,
+                });
+              } else {
+                transaction.update(userDocRef, { lock: false });
+              }
+            } catch (error) {
+              transaction.update(userDocRef, { lock: false });
+            }
+          } else if (userData.lock) {
+            transaction.update(userDocRef, { lock: false });
+          }
+  
+          // If the user is the authenticated user, update their activeDate and reset emailSent
+          if (docSnapshot.id === authUserId) {
+            transaction.update(userDocRef, {
+              activeDate: currentDate.toISOString(),
+              emailSent: false, // Reset emailSent when the user is active
+            });
+          }
+        });
+      }
     } catch (error) {
-      console.error('Error in checkAndUpdateUserInactivity:', error);
+      console.error('Error in checkAndUpdateAllUsersInactivity:', error);
     }
   };
-
+  
+  
+  
+  
+  
+  
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         userUid.current = user.uid;
         fetchUserCourses(user.uid);
-        checkAndUpdateUserInactivity(user.uid); // Check user inactivity
+        checkAndUpdateAllUsersInactivity(user.uid); // Check user inactivity
       } else {
         setCourses([]);
         setLoading(false);
