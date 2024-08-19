@@ -1,10 +1,12 @@
 'use client';
+import React from 'react';
 
 import { useState, useEffect } from 'react';
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { db, auth } from '../../../../utils/Firebase/firebaseConfig';
 import { useRouter, useParams } from 'next/navigation';
 import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
+import Duration from '../../../../components/duration/page';
 
 const VideoSelector = () => {
     const { courseId } = useParams();
@@ -166,6 +168,12 @@ const VideoSelector = () => {
         return false;
     };
 
+    const isChapterCompleted = (chapter) => {
+        return chapter.topics.every(topic =>
+            topic.videoLinks.every(video => completedVideos.includes(video.id))
+        );
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -184,12 +192,24 @@ const VideoSelector = () => {
                 Back to My Courses
             </button>
             <div className="flex flex-col space-y-4">
-                <h2 className="text-3xl font-bold text-gray-800 text-center">{selectedCourse.name}</h2>
-                <div className="flex flex-col space-y-4">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-3xl font-bold text-gray-800">{selectedCourse.name}</h2>
+                  
+                  
+                </div>
+                <Duration />
+                <div className="flex flex-col space-y-4  pb-[calc(60px+1rem)]" >
                     {selectedCourse.chapters.map((chapter) => (
-                        <div key={chapter.id} className="bg-white p-4 rounded-lg shadow-lg">
+                        <div key={chapter.id} className={`bg-white p-4 rounded-lg shadow-lg ${isChapterCompleted(chapter) ? 'border-4 border-green-500' : 'border-4 border-yellow-500'}`}>
                             <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => toggleChapter(chapter.chapterName)}>
-                                <h3 className="text-xl font-semibold text-gray-800">{chapter.chapterName}</h3>
+                                <h3 className="text-xl font-semibold text-gray-800">
+                                    {chapter.chapterName} 
+                                    {isChapterCompleted(chapter) ? (
+                                        <span className="ml-2 text-green-500">(Completed)</span>
+                                    ) : (
+                                        <span className="ml-2 text-yellow-500">(Pending)</span>
+                                    )}
+                                </h3>
                                 {expandedChapters[chapter.chapterName] ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
                             </div>
                             {expandedChapters[chapter.chapterName] && (

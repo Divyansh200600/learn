@@ -6,7 +6,8 @@ import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
 import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import Duration from '../../duration/page'
+import Duration from '../../../../components/duration/page'
+import classNames from 'classnames';
 
 const VideoPlayer = () => {
   const { courseId } = useParams();
@@ -326,6 +327,16 @@ const VideoPlayer = () => {
     }
   };
 
+  const isChapterCompleted = (chapter) => {
+    return chapter.topics.every((topic) =>
+      topic.videoLinks.every((video) => completedVideos.includes(video.id))
+    );
+  };
+
+  const isVideoCompleted = (video) => {
+    return completedVideos.includes(video.id);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -343,10 +354,12 @@ const VideoPlayer = () => {
       <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={handleBackToCourses}>
         Back to My Courses
       </button>
-      <Duration/>
-      <div className="flex space-x-4 mb-4">
+
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold text-gray-800">{course.name}</h2>
+        <Duration />
       </div>
+
       <div className="flex space-x-6">
         <div className="w-2/3 p-4 rounded-lg shadow-lg relative bg-white">
           {selectedVideo ? (
@@ -371,11 +384,10 @@ const VideoPlayer = () => {
                 {[0.5, 1.0, 1.5, 2.0].map((speed) => (
                   <button
                     key={speed}
-                    className={`px-4 py-2 rounded-full transition-all duration-300 ${
-                      playbackSpeed === speed
-                        ? 'bg-blue-500 text-white font-semibold'
-                        : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
-                    }`}
+                    className={`px-4 py-2 rounded-full transition-all duration-300 ${playbackSpeed === speed
+                      ? 'bg-blue-500 text-white font-semibold'
+                      : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
+                      }`}
                     onClick={() => handlePlaybackSpeedChange(speed)}
                   >
                     {speed}x
@@ -395,50 +407,97 @@ const VideoPlayer = () => {
             <p className="text-gray-500">Select a video to play</p>
           )}
         </div>
+
+
         <div className="w-1/3 bg-white p-4 rounded-lg shadow-lg overflow-auto h-[calc(100vh-4rem)]">
           {course.chapters.map((chapter) => (
-            <div key={chapter.id} className="mb-6">
-              <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => toggleChapter(chapter.chapterName)}>
-                <h3 className="text-xl font-semibold text-gray-800">{chapter.chapterName}</h3>
+            <div
+              key={chapter.id}
+              className={classNames(
+                'mb-6 rounded-lg',
+                {
+                  'bg-green-200': isChapterCompleted(chapter),
+                  'bg-yellow-100': !isChapterCompleted(chapter), // Yellow for incomplete chapters
+                }
+              )}
+            >
+              <div
+                className="flex justify-between items-center mb-2 cursor-pointer p-3 hover:bg-gray-200 rounded-lg"
+                onClick={() => toggleChapter(chapter.chapterName)}
+              >
+                <div className="flex items-center">
+                  <h3 className={classNames(
+                    'text-xl font-semibold',
+                    {
+                      'text-green-800': isChapterCompleted(chapter),
+                      'text-gray-800': !isChapterCompleted(chapter),
+                    }
+                  )}>
+                    {chapter.chapterName}
+                  </h3>
+                  <span
+                    className={classNames(
+                      'ml-2 text-sm font-medium px-2 py-1 rounded-full',
+                      {
+                        'bg-green-300 text-green-800': isChapterCompleted(chapter),
+                        'bg-yellow-200 text-yellow-800': !isChapterCompleted(chapter),
+                      }
+                    )}
+                  >
+                    {isChapterCompleted(chapter) ? 'Completed' : 'Pending'}
+                  </span>
+                </div>
                 {expandedChapters[chapter.chapterName] ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
               </div>
+
+
               {expandedChapters[chapter.chapterName] && (
-                <div>
+                <div className="px-4">
                   {chapter.topics.map((topic) => (
                     <div key={topic.id} className="mb-4">
                       <div
-                        className={`flex justify-between items-center p-2 ${expandedTopics[`${chapter.chapterName}-${topic.topicName}`] ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200'} rounded-lg cursor-pointer hover:bg-blue-500 hover:text-white transition-colors duration-300`}
+                        className={classNames(
+                          'flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors duration-300',
+                          {
+                            'bg-blue-500 text-white': expandedTopics[`${chapter.chapterName}-${topic.topicName}`],
+                            'bg-gray-600 text-gray-200': !expandedTopics[`${chapter.chapterName}-${topic.topicName}`],
+                            'hover:bg-blue-600': !expandedTopics[`${chapter.chapterName}-${topic.topicName}`],
+                          }
+                        )}
                         onClick={() => toggleTopic(chapter.chapterName, topic.topicName)}
                       >
                         <div className="flex items-center space-x-2">
                           <FaVideo className="text-blue-400" />
                           <h4 className="text-lg font-semibold">{topic.topicName}</h4>
                         </div>
-                        <span>{topic.videoLinks.length} videos</span>
+                        <span className="text-white">{topic.videoLinks.length} videos</span>
+
                         {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
                       </div>
+
                       {expandedTopics[`${chapter.chapterName}-${topic.topicName}`] && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-600">{topic.topicDescription}</p>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2 mt-2">
                             {topic.videoLinks.map((video, index) => (
                               <div
                                 key={video.id}
-                                className={`p-2 rounded-lg text-center cursor-pointer transition-colors duration-300 ${
-                                  selectedVideo?.link === video.link
-                                    ? 'bg-blue-700 text-white border-2 border-blue-500'
-                                    : !canWatch(video) && (chapter.id !== 'chapter-1' || topic.id !== 'topic-1' || index !== 0) // Ensure the first video of first chapter and topic is unlocked
-                                    ? 'bg-gray-500 text-gray-400 cursor-not-allowed'
-                                    : 'bg-gray-700 text-gray-300 hover:bg-blue-500 hover:text-white'
-                                }`}
+                                className={classNames(
+                                  'p-3 rounded-lg text-center cursor-pointer transition-colorsduration-300 font-bold text-black',
+                                  {
+                                    'bg-blue-700 border-2 border-blue-500': selectedVideo?.link === video.link,
+                                    'bg-gray-500 text-gray-400 cursor-not-allowed': isVideoCompleted(video),
+                                    'bg-gray-700 hover:bg-blue-500': !isVideoCompleted(video) && canWatch(video),
+                                  }
+                                )}
                                 onClick={() => handleVideoClick(video)}
                               >
                                 {`Video ${index + 1}`}
-                                {completedVideos.includes(video.id) && <FaCheck className="ml-2 text-green-500" />} {/* Show tick mark when video is fully watched */}
-                                {!canWatch(video) && (index !== 0 || chapter.id !== 'chapter-1' || topic.id !== 'topic-1') && <FaLock className="ml-2 text-red-500" />} {/* Show lock icon when video is locked, except for the first video of first chapter and topic */}
+                                {isVideoCompleted(video) && <FaCheck className="ml-2 text-green-500" />}
+                                {!canWatch(video) && (index !== 0 || chapter.id !== 'chapter-1' || topic.id !== 'topic-1') && <FaLock className="ml-2 text-red-500" />}
                               </div>
                             ))}
                           </div>
+
                         </div>
                       )}
                     </div>
@@ -450,6 +509,7 @@ const VideoPlayer = () => {
         </div>
       </div>
     </div>
+
   );
 };
 
