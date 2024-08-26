@@ -15,10 +15,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Avatar from '../../../../../assets/image/boy.png';
+import Avatar from '../../../../../assets/gif/checkout.gif';
 import TermsOfService from '../../../../../components/courseComponents/terms-of-service/page';
 import { auth, db } from '../../../../../utils/Firebase/firebaseConfig';
-import InvoiceTemplate, { generateAndSaveInvoice } from '../@Desktop/InvoiceTemplate';
 
 const steps = ['Login', 'Agreement', 'Payment'];
 
@@ -102,37 +101,42 @@ const PhoneCheckoutPage = ({ params }) => {
   };
 
   const handlePayment = async () => {
+    const paymentData = {
+      amount: discountedPrice !== null ? discountedPrice : courseData.salePrice,
+      name: userData.name,
+      uid: userData.uid,
+      email: userData.email,
+      suid: userData.suid,
+      courseId: courseData.courseId,
+      courseName: courseData.name,
+      currency: 'INR',
+      date: new Date().toISOString(),
+    };
+  
+  
     try {
-      const transactionId = `trans_${new Date().getTime()}`;
-      const name = userData ? userData.name : '';
-      const amount = discountedPrice !== null ? discountedPrice : courseData.salePrice;
-
-      const courseId = id; // course ID
-      const currency = 'INR'; // fixed as INR for now
-      const date = new Date().toISOString(); // current date
-      const payMethod = "PAY_PAGE"; // example pay method
-
-      const response = await axios.post('https://phonepe.v2.pulsezest.com/course-enroll', {
-        transactionId,
-        amount,
-        name,
-        courseId,
-        currency,
-        date,
-        payMethod
+      // Step 1: Request a payment token
+      const createResponse = await fetch('https://pz-api-system.pulsezest.com/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData),
       });
-
-      const { data } = response;
-      const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
-
-      // Redirect to payment URL
+  
+      if (!createResponse.ok) {
+        console.error('Failed to create payment token:', await createResponse.text());
+        throw new Error('Failed to create payment token');
+      }
+  
+      const { redirectUrl } = await createResponse.json();
+      console.log('Received redirect URL:', redirectUrl);
+  
+      // Step 2: Redirect the user to the URL to view the payment data
       window.location.href = redirectUrl;
-
     } catch (error) {
-      console.error('Error initiating payment:', error);
-      toast.error('Payment failed. Please try again.', { autoClose: 3000 });
+      console.error('Payment error:', error);
     }
   };
+
 
   const handleAgreement = () => {
     setAgreed(true);
@@ -369,8 +373,8 @@ const PhoneCheckoutPage = ({ params }) => {
               <Image
                 src={courseData.thumbnail}
                 alt="Course Logo"
-                width={52} height={52}
-                style={{ marginBottom: '10px', borderRadius: '50%' }}
+                width={402} height={102}
+                style={{ marginBottom: '10px', borderRadius: '5%' }}
               />
               <div>
                 <Typography variant="subtitle1" style={{ marginBottom: '5px', textAlign: 'center' }}>
@@ -388,11 +392,12 @@ const PhoneCheckoutPage = ({ params }) => {
         )}
 
         {userData && (
-          <div style={{ flex: '1 1 100%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee', width: '100%', marginTop: '20px' }}>
+          <div className="pb-[calc(60px+1rem)]">
+          <div style={{ flex: '1 1 100%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee', width: '100%', marginTop: '20px'}}>
             <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814', textAlign: 'center' }}>Student Details</Typography>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-              <Image src={Avatar} alt="Student Avatar" width={52} height={52} style={{ marginBottom: '10px', borderRadius: '50%' }} />
-              <div>
+              <Image src={Avatar} alt="Student Avatar" width={102} height={52} style={{ marginBottom: '10px', borderRadius: '5%' }} />
+              <div >
                 <Typography variant="subtitle1" style={{ marginBottom: '5px', textAlign: 'center' }}>
                   <strong>Student Name:</strong> {userData.name}
                 </Typography>
@@ -404,6 +409,7 @@ const PhoneCheckoutPage = ({ params }) => {
                 </Typography>
               </div>
             </div>
+          </div>
           </div>
         )}
       </div>
@@ -427,24 +433,7 @@ const PhoneCheckoutPage = ({ params }) => {
         </div>
       )}
 
-      {/* Invoice Template for PDF Generation */}
-      {loading && userData && courseData && (
-        <div style={{ display: 'none' }}>
-          <InvoiceTemplate
-            userData={userData}
-            courseData={{
-              courseId: id,
-              name: courseData.name,
-              dateProcessed: new Date(),
-              amount: courseData.salePrice * 100,
-              paymentId: '',
-              orderId: ''
-            }}
-            setLoading={setLoading}
-            refs={invoiceContainerRefs}
-          />
-        </div>
-      )}
+      
 
       {/* Toast Container */}
       <ToastContainer position="bottom-right" autoClose={3000} />

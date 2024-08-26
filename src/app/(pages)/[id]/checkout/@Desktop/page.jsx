@@ -7,7 +7,6 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import Image from 'next/image';
@@ -15,10 +14,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Avatar from '../../../../../assets/image/boy.png';
+import Avatar from '../../../../../assets/gif/checkout.gif';
 import TermsOfService from '../../../../../components/courseComponents/terms-of-service/page';
 import { auth, db } from '../../../../../utils/Firebase/firebaseConfig';
-import InvoiceTemplate, { generateAndSaveInvoice } from './InvoiceTemplate';
 
 const steps = ['Login', 'Agreement', 'Payment'];
 
@@ -33,7 +31,6 @@ const CheckoutPage = ({ params }) => {
   const [couponCode, setCouponCode] = useState('');
   const [discountedPrice, setDiscountedPrice] = useState(null);
   const [couponError, setCouponError] = useState(null);
-  const invoiceContainerRefs = useRef({});
 
   const fetchUserData = async (userId) => {
     try {
@@ -102,46 +99,42 @@ const CheckoutPage = ({ params }) => {
   };
 
   const handlePayment = async () => {
+    const paymentData = {
+      amount: discountedPrice !== null ? discountedPrice : courseData.salePrice,
+      name: userData.name,
+      uid: userData.uid,
+      email: userData.email,
+      suid: userData.suid,
+      courseId: courseData.courseId,
+      courseName: courseData.name,
+      currency: 'INR',
+      date: new Date().toISOString(),
+    };
+  
+  
     try {
-        // Generate a unique transaction ID
-        const transactionId = `trans_${new Date().getTime()}`;
-        
-        // Capture name and amount from the UI
-        const name = userData ? userData.name : '';
-        const amount = discountedPrice !== null ? discountedPrice : courseData.salePrice;
-
-        // Additional details
-        const courseId = id; // Course ID from the UI
-        const currency = 'INR'; // Fixed as INR
-        const date = new Date().toISOString(); // Current date
-        const payMethod = "PAY_PAGE"; // Example pay method
-
-        // Send payment details to the backend
-        const response = await axios.post('http://localhost:8000/course-enroll', {
-            transactionId,
-            amount,
-            name,
-            courseId,
-            currency,
-            date,
-            payMethod
-        });
-
-        // Get the redirect URL from the response
-        const { data } = response;
-        const redirectUrl = data.data.instrumentResponse.redirectInfo.url;
-
-        // Redirect the user to the payment gateway
-        window.location.href = redirectUrl;
-
+      // Step 1: Request a payment token
+      const createResponse = await fetch('https://pz-api-system.pulsezest.com/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData),
+      });
+  
+      if (!createResponse.ok) {
+        console.error('Failed to create payment token:', await createResponse.text());
+        throw new Error('Failed to create payment token');
+      }
+  
+      const { redirectUrl } = await createResponse.json();
+      console.log('Received redirect URL:', redirectUrl);
+  
+      // Step 2: Redirect the user to the URL to view the payment data
+      window.location.href = redirectUrl;
     } catch (error) {
-        console.error('Error initiating payment:', error);
-        toast.error('Payment failed. Please try again.', { autoClose: 3000 });
+      console.error('Payment error:', error);
     }
-};
-
-
-
+  };
+  
   const handleAgreement = () => {
     setAgreed(true);
   };
@@ -365,7 +358,6 @@ const CheckoutPage = ({ params }) => {
           </div>
         </div>
 
-
         {/* Right Side - Course and Student Details */}
         <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column', gap: '20px', marginLeft: '20px' }}>
           <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee' }}>
@@ -376,9 +368,10 @@ const CheckoutPage = ({ params }) => {
                   <Image
                     src={courseData.thumbnail}
                     alt="Course Logo"
-                    width={52} height={52}
-                    style={{ marginRight: '10px', borderRadius: '50%' }}
+                    width={302} height={102}
+                    style={{ marginRight: '10px', borderRadius: '5%' }}
                   />
+                  
                   <div>
                     <Typography variant="subtitle1" style={{ marginBottom: '5px' }}>
                       <strong>Title:</strong> {courseData.name}
@@ -402,7 +395,7 @@ const CheckoutPage = ({ params }) => {
             <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee' }}>
               <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814' }}>Student Details</Typography>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <Image src={Avatar} alt="Student Avatar" width={52} height={52} style={{ marginRight: '10px', borderRadius: '50%' }} />
+                <Image src={Avatar} alt="Student Avatar" width={202} height={102} style={{ marginRight: '10px', borderRadius: '5%' }} />
                 <div>
                   <Typography variant="subtitle1" style={{ marginBottom: '5px' }}>
                     <strong>Student Name:</strong> {userData.name}
