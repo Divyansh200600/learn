@@ -14,6 +14,7 @@ export default function DekstopProfileScreen() {
     aboutMe: '',
     skills: [],
     profilePhoto: '',
+    googlePhoto: '',
     recentActivity: []
   });
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +25,7 @@ export default function DekstopProfileScreen() {
     const scrollToTop = () => {
       window.scrollTo(0, 0);
     };
-    
+
     // Set a timeout to ensure the scroll happens after rendering
     const timeoutId = setTimeout(scrollToTop, 50);
 
@@ -36,24 +37,24 @@ export default function DekstopProfileScreen() {
       try {
         const userDoc = doc(db, 'users', uid);
         const userSnapshot = await getDoc(userDoc);
-        
+
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
-          
-         
+
           // Default values for userDetails
           const userDetails = {
             title: userData.title || 'Innovative Thinker at PulseZest',
             aboutMe: userData.aboutMe || 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
             skills: userData.skills || ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
-            profilePhoto: userData.profilePhoto || 'https://via.placeholder.com/200',
+            profilePhoto: userData.profilePhoto || '',
+            googlePhoto: userData.googlePhoto || '',
             recentActivity: Array.isArray(userData.recentActivity) ? userData.recentActivity : [] // Ensure it's an array
           };
 
           setUserDetails(userDetails);
           setEditedDetails(userDetails);
-          setUsername(userData.name ); // Ensure username is set
-          setEmail(userData.email); // Ensure email is set
+          setUsername(userData.name || 'John Doe'); // Ensure username is set
+          setEmail(userData.email || 'example@gmail.com'); // Ensure email is set
 
           // Fetch courses
           const coursesRef = collection(db, 'users', uid, 'courses');
@@ -66,7 +67,7 @@ export default function DekstopProfileScreen() {
             const courseSnapshot = await getDoc(courseDoc);
             if (courseSnapshot.exists()) {
               // Safely access recentActivity
-              const note = userDetails.recentActivity.find(activity => activity.id === courseId)?.note || '';
+              const note = userData.recentActivity.find(activity => activity.id === courseId)?.note || '';
 
               courses.push({
                 id: courseId,
@@ -94,7 +95,7 @@ export default function DekstopProfileScreen() {
       if (user) {
         fetchUserData(user.uid);
         setUsername(user.displayName || 'John Doe');
-        setEmail(user.email );
+        setEmail(user.email || 'example@gmail.com');
       } else {
         setUsername('John Doe');
         setEmail('example@gmail.com');
@@ -174,13 +175,15 @@ export default function DekstopProfileScreen() {
     });
   };
 
+  // Determine which photo URL to display
+  const displayPhoto = userDetails.profilePhoto || userDetails.googlePhoto || 'https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/divyansh-store%2Favtars%2Fuser.png?alt=media&token=4ff80d7c-9753-462d-945f-f0a389d93ab0';
+
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-gray-200 to-blue-200 text-gray-800">
       <header className="flex justify-between items-center mb-8">
         <div className="flex items-center">
-          
           <Image
-            src={userDetails.profilePhoto}
+            src={displayPhoto}
             alt="Profile Avatar"
             className="w-32 h-32 rounded-full border-4 border-blue-500"
             width={128}

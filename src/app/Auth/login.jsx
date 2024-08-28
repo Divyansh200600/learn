@@ -3,7 +3,7 @@ import { auth } from '../../utils/Firebase/firebaseConfig';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
-const Login = ({ onClose, onLogin }) => {
+const Login = ({ onClose = () => {}, onLogin }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const signInWithGoogle = async () => {
@@ -12,6 +12,8 @@ const Login = ({ onClose, onLogin }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+    
 
       await saveUserData(user);
 
@@ -27,6 +29,8 @@ const Login = ({ onClose, onLogin }) => {
     const userRef = doc(db, 'users', user.uid);
 
     try {
+      // Log the user data to be saved
+    
       // Check if the user document already exists
       const docSnap = await getDoc(userRef);
 
@@ -35,6 +39,7 @@ const Login = ({ onClose, onLogin }) => {
         await setDoc(userRef, {
           name: user.displayName,
           email: user.email,
+          googlePhoto: user.photoURL || 'default_url', // Save profile photo URL, default to 'default_url' if not available
           suid: generateCuid(),
           uid: user.uid,
         });
@@ -52,7 +57,7 @@ const Login = ({ onClose, onLogin }) => {
   };
 
   return (
-    <div >
+    <div>
       <button
         onClick={signInWithGoogle}
         onMouseEnter={() => setIsHovered(true)}
@@ -85,7 +90,7 @@ const styles = {
     backgroundColor: '#87ceeb',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer', 
+    cursor: 'pointer',
     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
     transition: 'background-color 0.3s ease',
   },

@@ -31,7 +31,7 @@ export default function PhoneHomescreen() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800 pb-[calc(60px+1rem)]" >
       <header className="flex justify-between items-center p-4 bg-white shadow">
         <h1 className="text-2xl font-bold text-blue-600">PulseZest Learning</h1>
         <button onClick={handleNotificationClick} className="focus:outline-none">

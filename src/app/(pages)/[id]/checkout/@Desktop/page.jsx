@@ -7,14 +7,13 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithPopup, setDoc } from 'firebase/auth';
+import { collection, doc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Avatar from '../../../../../assets/gif/checkout.gif';
 import TermsOfService from '../../../../../components/courseComponents/terms-of-service/page';
 import { auth, db } from '../../../../../utils/Firebase/firebaseConfig';
 
@@ -31,6 +30,8 @@ const CheckoutPage = ({ params }) => {
   const [couponCode, setCouponCode] = useState('');
   const [discountedPrice, setDiscountedPrice] = useState(null);
   const [couponError, setCouponError] = useState(null);
+
+  const AvatarFallback = 'https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/divyansh-store%2Favtars%2Fuser.png?alt=media&token=4ff80d7c-9753-462d-945f-f0a389d93ab0';
 
   const fetchUserData = async (userId) => {
     try {
@@ -67,7 +68,9 @@ const CheckoutPage = ({ params }) => {
   };
 
   useEffect(() => {
-    fetchCourseData(id);
+    if (id) {
+      fetchCourseData(id);
+    }
   }, [id]);
 
   const handleGoogleLogin = async () => {
@@ -76,7 +79,7 @@ const CheckoutPage = ({ params }) => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, { email: user.email, name: user.displayName, uid: user.uid });
+      await setDoc(userRef, { email: user.email, name: user.displayName, uid: user.uid, photoURL: user.photoURL });
       setActiveStep(1);
     } catch (error) {
       console.error(error);
@@ -99,8 +102,14 @@ const CheckoutPage = ({ params }) => {
   };
 
   const handlePayment = async () => {
+    if (!courseData || !userData) return;
+
     const paymentData = {
-      amount: discountedPrice !== null ? discountedPrice : courseData.salePrice,
+      amount: discountedPrice !== null ? discountedPrice : (
+        courseData.sales && courseData.sales.some(sale => sale.live)
+          ? courseData.sales.find(sale => sale.live).price
+          : courseData.salePrice
+      ),
       name: userData.name,
       uid: userData.uid,
       email: userData.email,
@@ -110,52 +119,50 @@ const CheckoutPage = ({ params }) => {
       currency: 'INR',
       date: new Date().toISOString(),
     };
-  
-  
+
     try {
-      // Step 1: Request a payment token
       const createResponse = await fetch('https://pz-api-system.pulsezest.com/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(paymentData),
       });
-  
+
       if (!createResponse.ok) {
         console.error('Failed to create payment token:', await createResponse.text());
         throw new Error('Failed to create payment token');
       }
-  
+
       const { redirectUrl } = await createResponse.json();
       console.log('Received redirect URL:', redirectUrl);
-  
-      // Step 2: Redirect the user to the URL to view the payment data
+
       window.location.href = redirectUrl;
     } catch (error) {
       console.error('Payment error:', error);
+      toast.error('Payment failed. Please try again.', { autoClose: 3000 });
     }
   };
-  
+
   const handleAgreement = () => {
     setAgreed(true);
   };
+
   const applyCoupon = async () => {
-    console.log('Applying coupon:', couponCode);
+    if (!courseData) {
+      setCouponError('Course data is not available.');
+      return;
+    }
 
     try {
-      // Ensure course data is loaded
-      if (!courseData) {
-        setCouponError('Course data is not available.');
-        return;
-      }
-
-      // Check if the coupon code exists in the courseData
       const couponData = courseData.couponCodes[couponCode];
 
       if (couponData) {
         if (couponData.status === "online") {
-          // Apply the discount
+          const primaryPrice = courseData.sales && courseData.sales.some(sale => sale.live)
+            ? courseData.sales.find(sale => sale.live).price
+            : courseData.salePrice;
+
           const discount = couponData.price;
-          const finalPrice = courseData.salePrice - discount;
+          const finalPrice = primaryPrice - discount;
           setDiscountedPrice(finalPrice);
           setCouponError(null);
 
@@ -197,9 +204,9 @@ const CheckoutPage = ({ params }) => {
                 >
                   Login with Google
                 </Button>
-
+  
                 <Typography variant="subtitle1" style={{ margin: '0 10px' }}>OR</Typography>
-
+  
                 <Input
                   type="text"
                   placeholder="Phone Number"
@@ -210,7 +217,7 @@ const CheckoutPage = ({ params }) => {
                     borderRadius: '4px',
                   }}
                 />
-
+  
                 <Input
                   type="text"
                   placeholder="OTP"
@@ -221,7 +228,7 @@ const CheckoutPage = ({ params }) => {
                     borderRadius: '4px',
                   }}
                 />
-
+  
                 <Button variant="contained" style={{ backgroundColor: '#001d3d' }}>
                   Login with OTP
                 </Button>
@@ -299,9 +306,16 @@ const CheckoutPage = ({ params }) => {
                 {couponError}
               </Typography>
             )}
+  
             <Typography variant="body1" style={{ marginBottom: '10px' }}>
-              <strong>Original Price:</strong> ₹{courseData?.salePrice}
+              <strong>Price:</strong> ₹{
+                discountedPrice !== null ? discountedPrice : 
+                (courseData?.sales && courseData.sales.some(sale => sale.live) 
+                ? courseData.sales.find(sale => sale.live).price 
+                : courseData?.salePrice)
+              }
             </Typography>
+  
             {discountedPrice !== null && (
               <Typography variant="body1" style={{ marginBottom: '10px' }}>
                 <strong>Discounted Price:</strong> ₹{discountedPrice}
@@ -309,8 +323,23 @@ const CheckoutPage = ({ params }) => {
             )}
           </>
         );
+      default:
+        return <Typography variant="body1">Unknown step</Typography>;
     }
-  }
+  };
+
+  const getAvatarUrl = () => {
+    if (userData?.profilePhoto) {
+      return userData.profilePhoto;
+    } else if (userData?.photoURL) {
+      return userData.photoURL;
+    } else if (user?.photoURL) {
+      return user.photoURL;
+    } else {
+      return AvatarFallback; // Use fallback image
+    }
+  };
+
   return (
     <div className="checkout-page" style={{ backgroundColor: '#001d3d', color: '#333333', minHeight: '100vh', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -340,8 +369,8 @@ const CheckoutPage = ({ params }) => {
             {renderStepContent(activeStep)}
           </div>
 
-         {/* Navigation Buttons */}
-         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+          {/* Navigation Buttons */}
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
               disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
@@ -371,7 +400,7 @@ const CheckoutPage = ({ params }) => {
                     width={302} height={102}
                     style={{ marginRight: '10px', borderRadius: '5%' }}
                   />
-                  
+
                   <div>
                     <Typography variant="subtitle1" style={{ marginBottom: '5px' }}>
                       <strong>Title:</strong> {courseData.name}
@@ -382,6 +411,7 @@ const CheckoutPage = ({ params }) => {
                     <Typography variant="body1" style={{ marginBottom: '10px' }}>
                       <strong>Description:</strong> {courseData.description}
                     </Typography>
+
                   </div>
                 </div>
               </>
@@ -395,7 +425,7 @@ const CheckoutPage = ({ params }) => {
             <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee' }}>
               <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814' }}>Student Details</Typography>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <Image src={Avatar} alt="Student Avatar" width={202} height={102} style={{ marginRight: '10px', borderRadius: '5%' }} />
+                <Image src={getAvatarUrl()} alt="Student Avatar" width={202} height={102} style={{ marginRight: '10px', borderRadius: '5%' }} />
                 <div>
                   <Typography variant="subtitle1" style={{ marginBottom: '5px' }}>
                     <strong>Student Name:</strong> {userData.name}

@@ -7,7 +7,6 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import Image from 'next/image';
@@ -33,6 +32,9 @@ const PhoneCheckoutPage = ({ params }) => {
   const [discountedPrice, setDiscountedPrice] = useState(null);
   const [couponError, setCouponError] = useState(null);
   const invoiceContainerRefs = useRef({});
+  const [finalPrice, setFinalPrice] = useState(null);
+
+  const AvatarFallback = 'https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/divyansh-store%2Favtars%2Fuser.png?alt=media&token=4ff80d7c-9753-462d-945f-f0a389d93ab0';
 
   const fetchUserData = async (userId) => {
     try {
@@ -59,7 +61,34 @@ const PhoneCheckoutPage = ({ params }) => {
       const courseRef = doc(collection(db, 'courses'), courseId);
       const courseSnap = await getDoc(courseRef);
       if (courseSnap.exists()) {
-        setCourseData({ ...courseSnap.data(), courseId });
+        const course = courseSnap.data();
+        
+        // Check if the sale is live and valid
+        const currentTime = Date.now();
+        let price = course.originalPrice; // Default to original price
+    
+        if (course.sales && course.sales.length > 0) {
+          const activeSale = course.sales.find(
+            (sale) => sale.live && sale.saleTime > currentTime
+          );
+    
+          if (activeSale) {
+            price = activeSale.price; // Use the sale price if an active sale is found
+          } else {
+            // If no active sale, use salePrice if available
+            if (course.salePrice) {
+              price = course.salePrice;
+              console.log('Using salePrice:', course.salePrice);
+            }
+          }
+        } else if (course.salePrice) {
+          // If no sales array is present, use salePrice
+          price = course.salePrice;
+          console.log('Using salePrice:', course.salePrice);
+        }
+  
+        setCourseData({ ...course, courseId });
+        setFinalPrice(price); // Set the final price for display and payment
       } else {
         console.error('No such course document!');
       }
@@ -78,7 +107,7 @@ const PhoneCheckoutPage = ({ params }) => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, { email: user.email, name: user.displayName, uid: user.uid });
+      await setDoc(userRef, { email: user.email, name: user.displayName, uid: user.uid, photoURL: user.photoURL, profilePhoto: user.photoURL });
       setActiveStep(1);
     } catch (error) {
       console.error(error);
@@ -102,7 +131,7 @@ const PhoneCheckoutPage = ({ params }) => {
 
   const handlePayment = async () => {
     const paymentData = {
-      amount: discountedPrice !== null ? discountedPrice : courseData.salePrice,
+      amount: discountedPrice !== null ? discountedPrice : finalPrice,
       name: userData.name,
       uid: userData.uid,
       email: userData.email,
@@ -112,7 +141,6 @@ const PhoneCheckoutPage = ({ params }) => {
       currency: 'INR',
       date: new Date().toISOString(),
     };
-  
   
     try {
       // Step 1: Request a payment token
@@ -137,7 +165,6 @@ const PhoneCheckoutPage = ({ params }) => {
     }
   };
 
-
   const handleAgreement = () => {
     setAgreed(true);
   };
@@ -158,8 +185,11 @@ const PhoneCheckoutPage = ({ params }) => {
       if (couponData) {
         if (couponData.status === "online") {
           // Apply the discount
+          const primaryPrice = courseData.sales && courseData.sales.some(sale => sale.live)
+            ? courseData.sales.find(sale => sale.live).price
+            : courseData.salePrice;
           const discount = couponData.price;
-          const finalPrice = courseData.salePrice - discount;
+          const finalPrice = primaryPrice - discount;
           setDiscountedPrice(finalPrice);
           setCouponError(null);
 
@@ -262,34 +292,37 @@ const PhoneCheckoutPage = ({ params }) => {
             <Typography variant="body1" style={{ marginBottom: '10px' }}>
               This is the payment step where users can complete their payment.
             </Typography>
-            <div style={{ marginBottom: '20px', position: 'relative' }}>
-              <Input
-                type="text"
-                placeholder="Enter coupon code"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                style={{
-                  backgroundColor: '#f1f1f1',
-                  border: 'none',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  marginRight: '10px'
-                }}
-                disabled={discountedPrice !== null}
-              />
-              <Button variant="contained" onClick={applyCoupon} style={{ backgroundColor: '#001d3d' }} disabled={discountedPrice !== null}>
-                Apply
-              </Button>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  style={{
+                    backgroundColor: '#f1f1f1',
+                    border: 'none',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    marginRight: '10px'
+                  }}
+                  disabled={discountedPrice !== null}
+                />
+                <Button
+                  variant="contained"
+                  onClick={applyCoupon}
+                  style={{ backgroundColor: '#001d3d' }}
+                  disabled={discountedPrice !== null}
+                >
+                  Apply
+                </Button>
+              </div>
               {discountedPrice !== null && (
                 <Typography
                   variant="body2"
                   style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
                     color: 'green',
-                    pointerEvents: 'none',
+                    marginTop: '10px',
                     opacity: 0.8
                   }}
                 >
@@ -302,9 +335,16 @@ const PhoneCheckoutPage = ({ params }) => {
                 {couponError}
               </Typography>
             )}
+  
             <Typography variant="body1" style={{ marginBottom: '10px' }}>
-              <strong>Original Price:</strong> ₹{courseData?.salePrice}
+              <strong>Price:</strong> ₹ {
+                discountedPrice !== null ? discountedPrice :
+                (courseData?.sales && courseData.sales.some(sale => sale.live)
+                ? courseData.sales.find(sale => sale.live).price
+                : courseData?.salePrice)
+              }
             </Typography>
+  
             {discountedPrice !== null && (
               <Typography variant="body1" style={{ marginBottom: '10px' }}>
                 <strong>Discounted Price:</strong> ₹{discountedPrice}
@@ -313,7 +353,19 @@ const PhoneCheckoutPage = ({ params }) => {
           </>
         );
       default:
-        return null;
+        return <Typography variant="body1">Unknown step</Typography>;
+    }
+  };
+
+  const getAvatarUrl = () => {
+    if (userData?.profilePhoto) {
+      return userData.profilePhoto;
+    } else if (userData?.photoURL) {
+      return userData.photoURL;
+    } else if (user?.photoURL) {
+      return user.photoURL;
+    } else {
+      return AvatarFallback; // Use fallback image
     }
   };
 
@@ -346,8 +398,8 @@ const PhoneCheckoutPage = ({ params }) => {
             {renderStepContent(activeStep)}
           </div>
 
-            {/* Navigation Buttons */}
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+          {/* Navigation Buttons */}
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
             <Button disabled={activeStep === 0 || (activeStep === 1 && (!user || !agreed))} onClick={handleBack} variant="outlined" style={{ color: '#001d3d', borderColor: '#001d3d' }}>Back</Button>
             <Button
               disabled={!user || (activeStep === 1 && !agreed)} // Disable if not agreed in step 1
@@ -363,7 +415,6 @@ const PhoneCheckoutPage = ({ params }) => {
             </Button>
           </div>
         </div>
-
 
         {/* Course and Student Details */}
         {courseData && (
@@ -393,11 +444,11 @@ const PhoneCheckoutPage = ({ params }) => {
 
         {userData && (
           <div className="pb-[calc(60px+1rem)]">
-          <div style={{ flex: '1 1 100%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee', width: '100%', marginTop: '20px'}}>
-            <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814', textAlign: 'center' }}>Student Details</Typography>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-              <Image src={Avatar} alt="Student Avatar" width={102} height={52} style={{ marginBottom: '10px', borderRadius: '5%' }} />
-              <div >
+            <div style={{ flex: '1 1 100%', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', backgroundColor: '#f4f3ee', width: '100%', marginTop: '20px'}}>
+              <Typography variant="h5" style={{ marginBottom: '20px', color: '#000814', textAlign: 'center' }}>Student Details</Typography>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                <Image src={getAvatarUrl()} alt="Student Avatar" width={102} height={102} style={{ marginBottom: '10px', borderRadius: '50%' }} />
+                <div >
                 <Typography variant="subtitle1" style={{ marginBottom: '5px', textAlign: 'center' }}>
                   <strong>Student Name:</strong> {userData.name}
                 </Typography>

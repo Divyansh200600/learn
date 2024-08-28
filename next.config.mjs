@@ -7,6 +7,7 @@ const nextConfig = {
       'www.w3schools.com',
       '1000logos.net',
       'imgs.search.brave.com',
+      'lh3.googleusercontent.com',
     ],
   },
   async redirects() {

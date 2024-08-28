@@ -1,9 +1,9 @@
-'use client';
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { CogIcon } from '@heroicons/react/outline';
-import {  FaAward } from 'react-icons/fa';
-
+import { FaAward } from 'react-icons/fa';
 import { db, auth, storage } from '../../../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -27,7 +27,8 @@ export default function PhoneProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDetails, setEditedDetails] = useState(userDetails);
   const [newSkill, setNewSkill] = useState('');
-  const [loginMethod, setLoginMethod] = useState(''); // Add state to handle login method
+  const [loginMethod, setLoginMethod] = useState(''); 
+  const [photoFile, setPhotoFile] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async (uid) => {
@@ -42,13 +43,12 @@ export default function PhoneProfileScreen() {
             title: userData.title || 'Innovative Thinker at PulseZest',
             aboutMe: userData.aboutMe || 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
             skills: userData.skills || ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
-            profilePhoto: userData.profilePhoto || 'https://via.placeholder.com/200',
+            profilePhoto: userData.profilePhoto || userData.googlePhoto || 'https://via.placeholder.com/200', // Display googlePhoto if profilePhoto is not available
             recentActivity: userData.recentActivity || []
           };
           setUserDetails(details);
           setEditedDetails(details);
 
-          // Fetch courses
           const coursesRef = collection(db, 'users', uid, 'courses');
           const coursesSnapshot = await getDocs(coursesRef);
           const courseIds = coursesSnapshot.docs.map(doc => doc.id);
@@ -61,7 +61,7 @@ export default function PhoneProfileScreen() {
               courses.push({
                 id: courseId,
                 name: courseSnapshot.data().name,
-                note: userData.recentActivity.find(activity => activity.id === courseId)?.note || '' // Fetch existing note if available
+                note: userData.recentActivity.find(activity => activity.id === courseId)?.note || ''
               });
             }
           }
@@ -111,19 +111,32 @@ export default function PhoneProfileScreen() {
     }
   };
 
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const user = auth.currentUser;
-      if (user) {
-        const storageRef = ref(storage, `userData/profilesPhoto/${user.uid}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        const photoURL = await getDownloadURL(storageRef);
+    setPhotoFile(file); 
+  };
 
-        setEditedDetails({
-          ...editedDetails,
-          profilePhoto: photoURL
-        });
+  const handleUploadPhoto = async () => {
+    if (photoFile) {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const storageRef = ref(storage, `userData/profilesPhoto/${user.uid}/${photoFile.name}`);
+          await uploadBytes(storageRef, photoFile);
+          const photoURL = await getDownloadURL(storageRef);
+
+          setEditedDetails(prevDetails => ({
+            ...prevDetails,
+            profilePhoto: photoURL
+          }));
+          setUserDetails(prevDetails => ({
+            ...prevDetails,
+            profilePhoto: photoURL
+          }));
+          setPhotoFile(null); 
+        }
+      } catch (error) {
+        console.error("Error uploading photo: ", error);
       }
     }
   };
@@ -135,7 +148,7 @@ export default function PhoneProfileScreen() {
         const userDoc = doc(db, 'users', user.uid);
         await setDoc(userDoc, {
           ...editedDetails,
-          email: email  // Ensure the email is also saved
+          email: email 
         }, { merge: true });
         setUserDetails(editedDetails);
         setIsEditing(false);
@@ -194,7 +207,6 @@ export default function PhoneProfileScreen() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
       <div className="flex-grow p-4 relative">
-        {/* Edit Profile Button */}
         <button
           className="absolute top-4 left-4 bg-transparent text-gray-600 hover:text-blue-600 transition-colors"
           onClick={() => router.push('/dashboard/settings')}
@@ -224,8 +236,6 @@ export default function PhoneProfileScreen() {
             Save
           </button>
         )}
-
-       
 
         <header className="text-center mb-6">
           <Image
@@ -308,6 +318,28 @@ export default function PhoneProfileScreen() {
             <p className="text-gray-700">Email: {email}</p>
           </div>
         </section>
+
+        {isEditing && (
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <h2 className="text-xl font-semibold text-blue-600 mb-4">Change Profile Photo</h2>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="mb-4"
+            />
+            {photoFile && (
+              <div className="flex items-center">
+                <button
+                  onClick={handleUploadPhoto}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Upload Photo
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <footer className="text-center bg-white py-4 shadow">
         <button className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">Settings</button>
