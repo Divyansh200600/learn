@@ -9,6 +9,7 @@ import Image from 'next/image';
 const MyCourses = () => {
     const router = useRouter();
     const [courses, setCourses] = useState([]);
+    const [categories, setCategories] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userUid, setUserUid] = useState(null);
@@ -28,6 +29,23 @@ const MyCourses = () => {
         };
         getUserUid();
     }, [router]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const categoriesSnapshot = await getDocs(collection(db, 'categories'));
+                const categoryData = {};
+                categoriesSnapshot.forEach((categoryDoc) => {
+                    const { name, courses } = categoryDoc.data();
+                    categoryData[categoryDoc.id] = { name, courses };
+                });
+                setCategories(categoryData);
+            } catch (error) {
+                console.error('Error fetching categories: ', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const fetchUserCourses = async (uid) => {
         try {
@@ -113,6 +131,10 @@ const MyCourses = () => {
         router.push(`/courses/${course.id}`);
     };
 
+    const getCategoryForCourse = (courseId) => {
+        return Object.values(categories).find((category) => category.courses && category.courses.includes(courseId));
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -141,34 +163,43 @@ const MyCourses = () => {
                         </button>
                     </div>
                 ) : (
-                    courses.map((course) => (
-                        <div
-                            key={course.id}
-                            className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center space-y-2 relative"
-                        >
-                            <Image
-                                src={course.thumbnail}
-                                alt={course.name}
-                                width={200}
-                                height={120}
-                                className="w-full h-33 object-cover rounded-lg mb-4"
-                            />
-                            <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
-                            <p className="text-gray-700 text-center">{course.description}</p>
-                            <div className="flex justify-between w-full text-xs mt-2">
-                                <span className="bg-blue-500 text-white px-3 py-1 rounded-full">
-                                    {course.completionPercentage}% complete
-                                </span>
-                                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
-                            </div>
-                            <button
-                                className="bg-blue-600 text-white px-4 py-2 rounded-full mt-4 w-full font-semibold hover:bg-blue-700 transition-colors duration-300"
-                                onClick={() => handleCourseClick(course)}
+                    courses.map((course) => {
+                        const category = getCategoryForCourse(course.id);
+
+                        return (
+                            <div
+                                key={course.id}
+                                className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center space-y-2 relative"
                             >
-                                Start Learning
-                            </button>
-                        </div>
-                    ))
+                                {category && (
+                                    <div className="absolute top-4 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
+                                        {category.name}
+                                    </div>
+                                )}
+                                <Image
+                                    src={course.thumbnail}
+                                    alt={course.name}
+                                    width={200}
+                                    height={120}
+                                    className="w-full h-33 object-cover rounded-lg mb-4"
+                                />
+                                <h2 className="text-xl font-semibold text-blue-600">{course.name}</h2>
+                                <p className="text-gray-700 text-center">{course.description}</p>
+                                <div className="flex justify-between w-full text-xs mt-2">
+                                    <span className="bg-blue-500 text-white px-3 py-1 rounded-full">
+                                        {course.completionPercentage}% complete
+                                    </span>
+                                    <span className="bg-yellow-500 text-white px-3 py-1 rounded-full">{course.courseLevel}</span>
+                                </div>
+                                <button
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-full mt-4 w-full font-semibold hover:bg-blue-700 transition-colors duration-300"
+                                    onClick={() => handleCourseClick(course)}
+                                >
+                                    Start Learning
+                                </button>
+                            </div>
+                        );
+                    })
                 )}
             </main>
         </div>

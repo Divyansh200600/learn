@@ -1,10 +1,25 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '../../../../utils/Firebase/firebaseConfig'; // Adjust the import path as needed
+import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { CircularProgress, LinearProgress, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { CircularProgress, LinearProgress, Accordion, AccordionSummary, AccordionDetails, Typography, Button, Card, CardContent, CardHeader } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import { Pie, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Registering necessary Chart.js components
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function PhoneMyStatsPage() {
   const [courses, setCourses] = useState([]);
@@ -12,6 +27,7 @@ export default function PhoneMyStatsPage() {
   const [courseDetails, setCourseDetails] = useState(null);
   const [videoProgress, setVideoProgress] = useState({});
   const [totalCourseProgress, setTotalCourseProgress] = useState(0);
+  const [showChartView, setShowChartView] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -98,7 +114,7 @@ export default function PhoneMyStatsPage() {
     if (!Array.isArray(videoLinks) || videoLinks.length === 0) return <li>No videos available</li>;
 
     return videoLinks.map((video, index) => {
-      const videoIndex = index + 1; // Index for the video in the current topic
+      const videoIndex = index + 1;
       const videoKey = `video-${chapterIndex}-${topicIndex}-${videoIndex}`;
       const progress = videoProgress[videoKey] || 0;
 
@@ -149,49 +165,145 @@ export default function PhoneMyStatsPage() {
     ));
   };
 
+
+const renderCharts = () => {
+  if (!courseDetails || !courseDetails.chapters) return null;
+
   return (
-    <div className="p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 min-h-screen pb-[calc(60px+1rem)]">
-      <h1 className="text-xl mb-4 font-bold text-gray-800">My Stats Page</h1>
-      <div className="mb-4">
-        <label htmlFor="courseSelector" className="block mb-2 text-sm font-medium text-gray-700">Select a Course:</label>
-        <select
-          id="courseSelector"
-          value={selectedCourseId}
-          onChange={handleCourseSelection}
-          className="p-2 border border-gray-300 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="" disabled>Select a course</option>
-          {courses.length > 0 ? (
-            courses.map(course => (
-              <option key={course.id} value={course.id}>{course.name}</option>
-            ))
-          ) : (
-            <option value="" disabled>No courses available</option>
-          )}
-        </select>
+      <div className="mt-4 max-h-[400px] overflow-y-auto"> {/* Set a max height and allow scrolling */}
+          {courseDetails.chapters.map((chapter, chapterIndex) => {
+              const totalChapterProgress = chapter.topics.reduce((chapterProgress, topic, topicIndex) => {
+                  const topicProgress = topic.videoLinks.reduce((videoProgress, video, videoIndex) => {
+                      const videoKey = `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}`;
+                      return videoProgress + (videoProgress[videoKey] || 0);
+                  }, 0);
+
+                  return chapterProgress + topicProgress;
+              }, 0);
+
+              const totalChapterVideos = chapter.topics.reduce((count, topic) => count + (topic.videoLinks ? topic.videoLinks.length : 0), 0);
+              const chapterProgressPercentage = totalChapterVideos > 0 ? totalChapterProgress / totalChapterVideos : 0;
+
+              const data = {
+                  labels: chapter.topics.map((topic) => topic.topicName),
+                  datasets: [
+                      {
+                          label: 'Chapter Progress',
+                          data: chapter.topics.map((topic, topicIndex) => {
+                              return topic.videoLinks.reduce((topicProgress, video, videoIndex) => {
+                                  const videoKey = `video-${chapterIndex + 1}-${topicIndex + 1}-${videoIndex + 1}`;
+                                  return topicProgress + (videoProgress[videoKey] || 0);
+                              }, 0);
+                          }),
+                          backgroundColor: '#4caf50',
+                      },
+                  ],
+              };
+
+              return (
+                  <Card key={chapterIndex} className="mb-4">
+                      <CardContent>
+                          <Typography variant="h6" className="text-gray-800 mb-2">{chapter.chapterName}</Typography>
+                          <div className="h-[250px]">
+                              <Bar data={data} options={{ maintainAspectRatio: false }} />
+                          </div> {/* Fixed height for each chart */}
+                      </CardContent>
+                  </Card>
+              );
+          })}
       </div>
-      {courseDetails && (
-        <div>
-          <h2 className="text-lg font-bold text-gray-800">{courseDetails.name}</h2>
-          <div className="mt-4">
-            <h3 className="text-md font-semibold text-gray-700">Total Course Progress</h3>
-            <div className="flex items-center mb-4">
-              <CircularProgress
-                variant="determinate"
-                value={totalCourseProgress}
-                size={50}
-                thickness={4}
-                sx={{ color: '#4caf50' }}
-              />
-              <span className="ml-2 text-lg text-gray-800">{totalCourseProgress.toFixed(2)}%</span>
-            </div>
-            <h3 className="text-md font-semibold text-gray-700">Chapters</h3>
-            <ul className="list-disc">
-              {renderChapters(courseDetails.chapters)}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
   );
+};
+
+return (
+  <div className="p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 min-h-screen pb-[calc(60px+1rem)]">
+      <Card className="mb-4">
+          <CardHeader title="My Stats Page" className="text-xl font-bold text-gray-800" />
+          <CardContent>
+              <div className="mb-4">
+                  <label htmlFor="courseSelector" className="block mb-2 text-sm font-medium text-gray-700">Select a Course:</label>
+                  <select
+                      id="courseSelector"
+                      value={selectedCourseId}
+                      onChange={handleCourseSelection}
+                      className="p-2 border border-gray-300 rounded-md w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                      <option value="" disabled>Select a course</option>
+                      {courses.length > 0 ? (
+                          courses.map(course => (
+                              <option key={course.id} value={course.id}>{course.name}</option>
+                          ))
+                      ) : (
+                          <option value="" disabled>No courses available</option>
+                      )}
+                  </select>
+              </div>
+          </CardContent>
+      </Card>
+
+      {courseDetails && (
+          <Card className="mb-4">
+              <CardHeader title={courseDetails.name} className="text-lg font-bold text-gray-800" />
+              <CardContent>
+                  <div className="mt-4 flex items-center">
+                      <div className="mr-4">
+                          <h3 className="text-md font-semibold text-gray-700">Total Course Progress</h3>
+                          <div className="flex items-center mb-4">
+                              <CircularProgress
+                                  variant="determinate"
+                                  value={totalCourseProgress}
+                                  size={50}
+                                  thickness={4}
+                                  sx={{ color: '#4caf50' }}
+                              />
+                              <span className="ml-2 text-lg text-gray-800">{totalCourseProgress.toFixed(2)}%</span>
+                          </div>
+                      </div>
+                      <Button
+                          variant="contained"
+                          startIcon={showChartView ? <BarChartIcon /> : <PieChartIcon />}
+                          onClick={() => setShowChartView(!showChartView)}
+                          sx={{ height: 'fit-content' }}
+                      >
+                          {showChartView ? 'Normal View' : 'Show Charts'}
+                      </Button>
+                  </div>
+                  {showChartView ? (
+                      <>
+                          <div className="mt-4">
+                              <h3 className="text-md font-semibold text-gray-700">Total Course Progress (Pie Chart)</h3>
+                              <div className="h-[250px]">
+                                  <Pie
+                                      data={{
+                                          labels: ['Progress', 'Remaining'],
+                                          datasets: [
+                                              {
+                                                  data: [totalCourseProgress, 100 - totalCourseProgress],
+                                                  backgroundColor: ['#4caf50', '#e0e0e0'],
+                                              },
+                                          ],
+                                      }}
+                                      options={{ maintainAspectRatio: false }}
+                                  />
+                              </div>
+                          </div>
+                          <div className="mt-4">
+                              <h3 className="text-md font-semibold text-gray-700">Chapters Progress (Bar Charts)</h3>
+                              {renderCharts()}
+                          </div>
+                      </>
+                  ) : (
+                      <>
+                          <h3 className="text-md font-semibold text-gray-700">Chapters</h3>
+                          <ul className="list-disc">
+                              {renderChapters(courseDetails.chapters)}
+                          </ul>
+                      </>
+                  )}
+              </CardContent>
+          </Card>
+      )}
+  </div>
+);
 }
+

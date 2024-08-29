@@ -225,12 +225,6 @@ const DesktopMyCourses = () => {
     }
   };
   
-  
-  
-  
-  
-  
-  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {

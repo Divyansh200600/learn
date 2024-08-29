@@ -36,13 +36,22 @@ export default function Courses() {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           
-          // Check if enrollDate exists and is a Timestamp object
+          // Handle enrollDate as a Timestamp or a string
           let enrollDate = null;
-          if (data.enrollDate && typeof data.enrollDate.toDate === 'function') {
-            enrollDate = data.enrollDate.toDate();
+          if (data.enrollDate) {
+            if (data.enrollDate.toDate) {
+              // If enrollDate is a Firestore Timestamp
+              enrollDate = data.enrollDate.toDate();
+            } else if (typeof data.enrollDate === 'string') {
+              // If enrollDate is a date string
+              enrollDate = new Date(data.enrollDate);
+            } else {
+              console.error(`Invalid enrollDate type for course ${doc.id}`);
+              return; // Skip this course if enrollDate is invalid
+            }
           } else {
-            console.error(`Invalid enrollDate for course ${doc.id}`);
-            return; // Skip this course if enrollDate is invalid
+            console.error(`Missing enrollDate for course ${doc.id}`);
+            return; // Skip this course if enrollDate is missing
           }
 
           // Calculate the end date (3 months from enroll date)
@@ -77,22 +86,21 @@ export default function Courses() {
 
   return (
     <div>
-     
       {courses.length > 0 ? (
         <ul>
           {courses.map((course) => (
-           <li key={course.courseId} className="mb-4">
-           <div className="flex items-center">
-             <p className="text-lg font-semibold text-gray-800 mr-2">Remaining Days:</p>
-             <span className={`text-lg font-bold text-white px-3 py-1 rounded-full ${course.remainingDays > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
-               {course.remainingDays} days
-             </span>
-           </div>
-         </li>
+            <li key={course.courseId} className="mb-4">
+              <div className="flex items-center">
+                <p className="text-lg font-semibold text-gray-800 mr-2">Remaining Days:</p>
+                <span className={`text-lg font-bold text-white px-3 py-1 rounded-full ${course.remainingDays > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+                  {course.remainingDays} days
+                </span>
+              </div>
+            </li>
           ))}
         </ul>
       ) : (
-        <p>No courses found.</p>
+        <p className="text-center text-gray-500">No courses found.</p>
       )}
     </div>
   );

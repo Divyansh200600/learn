@@ -8,6 +8,8 @@ import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icon
 import { useRouter } from 'next/navigation';
 import Duration from '../../../../components/duration/page'
 import classNames from 'classnames';
+import ChapterCompletionPopup from '../../../../components/celebrate Pop up/pop';
+import axios from 'axios';
 
 const VideoPlayer = () => {
   const { courseId } = useParams();
@@ -25,7 +27,10 @@ const VideoPlayer = () => {
   const [completedVideos, setCompletedVideos] = useState([]); // Track completed videos
   const [videoProgress, setVideoProgress] = useState({}); // Track video progress
   const [autoPlay, setAutoPlay] = useState(false); // New autoPlay flag
-
+  const [celebratedChapters, setCelebratedChapters] = useState([]);
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false);
+  const [completedChapter, setCompletedChapter] = useState(null);
+  
   useEffect(() => {
     const getUserUid = () => {
       auth.onAuthStateChanged((user) => {
@@ -39,6 +44,101 @@ const VideoPlayer = () => {
     };
     getUserUid();
   }, [router]);
+
+  useEffect(() => {
+    const fetchChapterCompletionStatus = async () => {
+      if (!userUid || !courseId) return;
+  
+      try {
+        const snapshot = await getDocs(collection(db, 'users', userUid, 'courses', courseId, 'chapterCompletion'));
+        const completed = snapshot.docs.map(doc => doc.id);
+        const popupShown = snapshot.docs.filter(doc => doc.data().popupShown).map(doc => doc.id);
+        setCelebratedChapters(popupShown);
+      } catch (error) {
+        console.error('Error fetching chapter completion status:', error);
+      }
+    };
+  
+    fetchChapterCompletionStatus();
+  }, [userUid, courseId]);
+
+
+  const handleChapterCompletion = async (chapter) => {
+    if (!userUid || !courseId) return;
+  
+    // Check if the chapter has already been celebrated
+    if (!celebratedChapters.includes(chapter.id)) {
+      setShowCompletionPopup(true);
+      setCompletedChapter(chapter);
+  
+      // Save chapter completion data to Firestore
+      const chapterCompletionRef = doc(db, 'users', userUid, 'courses', courseId, 'chapterCompletion', chapter.id);
+      await setDoc(chapterCompletionRef, { completed: true, popupShown: false }, { merge: true });
+  
+      // Update local state to track that the popup has not been shown
+      setCelebratedChapters(prev => [...prev, chapter.id]);
+    }
+  };
+  
+  const checkAndHandleChapterCompletion = (chapter) => {
+    // Check if the chapter is completed and the popup hasn't been shown yet
+    if (isChapterCompleted(chapter) && !celebratedChapters.includes(chapter.id)) {
+      handleChapterCompletion(chapter);
+    }
+  };
+  
+  useEffect(() => {
+    if (course) {
+      course.chapters.forEach((chapter) => {
+        checkAndHandleChapterCompletion(chapter);
+      });
+    }
+  }, [course, completedVideos, celebratedChapters]);
+  
+
+  const handleCelebrateAndUnlock = async () => {
+    setShowCompletionPopup(false);
+  
+    if (!completedChapter) return;
+  
+    // Extract necessary data with fallback to default values
+    const currentUser = auth.currentUser || {};
+    const userName = currentUser.displayName ; 
+    const userEmail = currentUser.email ;
+    const courseName = course?.name ; 
+    const chapterName = completedChapter?.chapterName ; 
+  
+    // Prepare the data to be sent
+    const postData = {
+      userName,
+      userEmail,
+      courseName,
+      chapterName
+    };
+    
+    console.log('Data to be sent:', postData);
+  
+    try {
+      // Send POST request to your endpoint
+      await axios.post('https://pz-api-system.pulsezest.com/api/course-chapter-completion', postData);
+    } catch (error) {
+      console.error('Error sending chapter completion data:', error);
+      // Optionally handle or log the network error here
+    }
+  
+    try {
+      // Save chapter completion data to Firestore
+      const chapterCompletionRef = doc(db, 'users', userUid, 'courses', courseId, 'chapterCompletion', completedChapter.id);
+      await setDoc(chapterCompletionRef, { completed: true, popupShown: true }, { merge: true });
+  
+      if (!celebratedChapters.includes(completedChapter.id)) {
+        setShowCompletionPopup(true);
+        setCompletedChapter(completedChapter);
+      }
+    } catch (error) {
+      console.error('Error updating Firestore:', error);
+    }
+  };
 
   const fetchCourseData = async () => {
     if (!courseId || !userUid) {
@@ -133,18 +233,7 @@ const VideoPlayer = () => {
     }
   }, [courseId, userUid]);
 
-  const findVideoById = (videoId) => {
-    for (const chapter of course?.chapters || []) {
-      for (const topic of chapter.topics || []) {
-        for (const video of topic.videoLinks || []) {
-          if (video.id === videoId) {
-            return video;
-          }
-        }
-      }
-    }
-    return null;
-  };
+ 
 
   const findVideoByUrl = (url) => {
     for (const chapter of course?.chapters || []) {
@@ -351,6 +440,13 @@ const VideoPlayer = () => {
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">
+        {showCompletionPopup && (
+        <ChapterCompletionPopup
+          onClose={() => setShowCompletionPopup(false)}
+          onCelebrate={handleCelebrateAndUnlock}
+          chapterName={completedChapter?.chapterName}
+        />
+      )}
       <button className="bg-blue-500 text-white px-4 py-2 rounded-full mb-4" onClick={handleBackToCourses}>
         Back to My Courses
       </button>
