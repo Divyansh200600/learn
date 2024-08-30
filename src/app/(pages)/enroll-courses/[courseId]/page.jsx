@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
-import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaVideo, FaCheck, FaLock, FaComment, FaCommentSlash } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import Duration from '../../../../components/duration/page'
 import classNames from 'classnames';
 import ChapterCompletionPopup from '../../../../components/celebrate Pop up/pop';
 import axios from 'axios';
+import Comment from '../../../../components/comment/Comment';
 
 const VideoPlayer = () => {
   const { courseId } = useParams();
@@ -30,7 +31,10 @@ const VideoPlayer = () => {
   const [celebratedChapters, setCelebratedChapters] = useState([]);
   const [showCompletionPopup, setShowCompletionPopup] = useState(false);
   const [completedChapter, setCompletedChapter] = useState(null);
-  
+  const [showComments, setShowComments] = useState(false);
+  const [currentChapterName, setCurrentChapterName] = useState('');
+  const [currentTopicName, setCurrentTopicName] = useState('');
+
   useEffect(() => {
     const getUserUid = () => {
       auth.onAuthStateChanged((user) => {
@@ -48,7 +52,7 @@ const VideoPlayer = () => {
   useEffect(() => {
     const fetchChapterCompletionStatus = async () => {
       if (!userUid || !courseId) return;
-  
+
       try {
         const snapshot = await getDocs(collection(db, 'users', userUid, 'courses', courseId, 'chapterCompletion'));
         const completed = snapshot.docs.map(doc => doc.id);
@@ -58,35 +62,35 @@ const VideoPlayer = () => {
         console.error('Error fetching chapter completion status:', error);
       }
     };
-  
+
     fetchChapterCompletionStatus();
   }, [userUid, courseId]);
 
 
   const handleChapterCompletion = async (chapter) => {
     if (!userUid || !courseId) return;
-  
+
     // Check if the chapter has already been celebrated
     if (!celebratedChapters.includes(chapter.id)) {
       setShowCompletionPopup(true);
       setCompletedChapter(chapter);
-  
+
       // Save chapter completion data to Firestore
       const chapterCompletionRef = doc(db, 'users', userUid, 'courses', courseId, 'chapterCompletion', chapter.id);
       await setDoc(chapterCompletionRef, { completed: true, popupShown: false }, { merge: true });
-  
+
       // Update local state to track that the popup has not been shown
       setCelebratedChapters(prev => [...prev, chapter.id]);
     }
   };
-  
+
   const checkAndHandleChapterCompletion = (chapter) => {
     // Check if the chapter is completed and the popup hasn't been shown yet
     if (isChapterCompleted(chapter) && !celebratedChapters.includes(chapter.id)) {
       handleChapterCompletion(chapter);
     }
   };
-  
+
   useEffect(() => {
     if (course) {
       course.chapters.forEach((chapter) => {
@@ -94,20 +98,20 @@ const VideoPlayer = () => {
       });
     }
   }, [course, completedVideos, celebratedChapters]);
-  
+
 
   const handleCelebrateAndUnlock = async () => {
     setShowCompletionPopup(false);
-  
+
     if (!completedChapter) return;
-  
+
     // Extract necessary data with fallback to default values
     const currentUser = auth.currentUser || {};
-    const userName = currentUser.displayName ; 
-    const userEmail = currentUser.email ;
-    const courseName = course?.name ; 
-    const chapterName = completedChapter?.chapterName ; 
-  
+    const userName = currentUser.displayName;
+    const userEmail = currentUser.email;
+    const courseName = course?.name;
+    const chapterName = completedChapter?.chapterName;
+
     // Prepare the data to be sent
     const postData = {
       userName,
@@ -115,9 +119,9 @@ const VideoPlayer = () => {
       courseName,
       chapterName
     };
-    
+
     console.log('Data to be sent:', postData);
-  
+
     try {
       // Send POST request to your endpoint
       await axios.post('https://pz-api-system.pulsezest.com/api/course-chapter-completion', postData);
@@ -125,12 +129,12 @@ const VideoPlayer = () => {
       console.error('Error sending chapter completion data:', error);
       // Optionally handle or log the network error here
     }
-  
+
     try {
       // Save chapter completion data to Firestore
       const chapterCompletionRef = doc(db, 'users', userUid, 'courses', courseId, 'chapterCompletion', completedChapter.id);
       await setDoc(chapterCompletionRef, { completed: true, popupShown: true }, { merge: true });
-  
+
       if (!celebratedChapters.includes(completedChapter.id)) {
         setShowCompletionPopup(true);
         setCompletedChapter(completedChapter);
@@ -233,7 +237,7 @@ const VideoPlayer = () => {
     }
   }, [courseId, userUid]);
 
- 
+
 
   const findVideoByUrl = (url) => {
     for (const chapter of course?.chapters || []) {
@@ -255,13 +259,14 @@ const VideoPlayer = () => {
           if (video.id === videoId) {
             setExpandedChapters((prev) => ({ ...prev, [chapter.chapterName]: true }));
             setExpandedTopics((prev) => ({ ...prev, [`${chapter.chapterName}-${topic.topicName}`]: true }));
+           
           }
         }
       }
     }
   };
 
-  const handleVideoClick = async (video) => {
+  const handleVideoClick = async (video, chapterName, topicName) => {
     if (!video.id) {
       return;
     }
@@ -274,6 +279,9 @@ const VideoPlayer = () => {
     // Update the last watched video URL
     const lastWatchedRef = doc(collection(db, 'users', userUid, 'courses', courseId, 'videoProgress'), 'lastWatched');
     await setDoc(lastWatchedRef, { watched: video.link }, { merge: true });
+
+  
+
   };
 
   const toggleChapter = (chapterName) => {
@@ -288,7 +296,11 @@ const VideoPlayer = () => {
       ...prevState,
       [`${chapterName}-${topicName}`]: !prevState[`${chapterName}-${topicName}`]
     }));
+  
+    setCurrentChapterName(chapterName );
+    setCurrentTopicName(topicName );
   };
+  
 
   const handleBackToCourses = () => {
     router.push(`/dashboard/my-course`);
@@ -426,6 +438,10 @@ const VideoPlayer = () => {
     return completedVideos.includes(video.id);
   };
 
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -440,7 +456,7 @@ const VideoPlayer = () => {
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">
-        {showCompletionPopup && (
+      {showCompletionPopup && (
         <ChapterCompletionPopup
           onClose={() => setShowCompletionPopup(false)}
           onCelebrate={handleCelebrateAndUnlock}
@@ -491,12 +507,48 @@ const VideoPlayer = () => {
                 ))}
               </div>
 
-              <h1 className="font-bold text-2xl mt-4 text-gray-800">Description</h1>
-              {selectedVideoDescription && (
-                <div
-                  style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px', backgroundColor: '#f9f9f9' }}
-                  dangerouslySetInnerHTML={{ __html: selectedVideoDescription }}
-                />
+              <div style={{ position: 'absolute', top: '415px', right: '16px' }}>
+                <button
+                  onClick={toggleComments}
+                  className={`px-4 py-2 rounded-full flex items-center space-x-2 transition-all duration-300 ${showComments
+                    ? 'bg-blue-500 text-white font-semibold'
+                    : 'bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white'
+                    }`}
+                >
+                  {showComments ? (
+                    
+                    <>
+                      <FaCommentSlash className="text-xl" />
+                      <span>Hide Comments</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaComment className="text-xl" />
+                      <span>Show Comments</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+
+              {!showComments && selectedVideoDescription && (
+                <>
+                  <h1 className="font-bold text-2xl mt-4 text-gray-800">Description</h1>
+                  <div
+                    style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px', backgroundColor: '#f9f9f9' }}
+                    dangerouslySetInnerHTML={{ __html: selectedVideoDescription }}
+                  />
+                </>
+              )}
+
+              {showComments && (
+                 <Comment 
+                 courseId={courseId} 
+                 videoId={selectedVideo.id}
+                 courseName={course.name}
+                 chapterName={currentChapterName}
+                 topicName={currentTopicName}
+               />
               )}
             </>
           ) : (
@@ -548,7 +600,7 @@ const VideoPlayer = () => {
 
 
               {expandedChapters[chapter.chapterName] && (
-                <div className="px-4">
+                <div className="px-4 pb-[calc(20px+1rem)]">
                   {chapter.topics.map((topic) => (
                     <div key={topic.id} className="mb-4">
                       <div

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaBell } from 'react-icons/fa';
+import { Drawer, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Header = ({ setActiveTab, isSidebarOpen }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef(null);
 
   const notifications = [
-    
+    // Add your notifications here
   ];
 
   const handleNotificationsClick = () => {
@@ -41,12 +43,19 @@ const Header = ({ setActiveTab, isSidebarOpen }) => {
         <FaBell className="mr-2" />
         Notifications
       </button>
-      {showNotifications && (
-        <div
-          ref={notificationsRef}
-          className="absolute right-6 top-16 bg-white text-black rounded-lg shadow-lg p-4 w-64"
-        >
-          <h3 className="text-lg font-semibold mb-2">Notifications</h3>
+
+      <Drawer
+        anchor="right"
+        open={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      >
+        <div className="w-80 p-4" ref={notificationsRef}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Notifications</h3>
+            <IconButton onClick={() => setShowNotifications(false)}>
+              <CloseIcon />
+            </IconButton>
+          </div>
           <ul className="space-y-2">
             {notifications.map((notification, index) => (
               <li
@@ -58,7 +67,7 @@ const Header = ({ setActiveTab, isSidebarOpen }) => {
             ))}
           </ul>
         </div>
-      )}
+      </Drawer>
     </div>
   );
 };
