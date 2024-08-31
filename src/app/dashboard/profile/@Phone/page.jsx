@@ -12,6 +12,8 @@ import { useRouter } from 'next/navigation';
 import GoogleLogin from '../../../Auth/login'; 
 import Login from '../../../../components/courseComponents/login/loginforPhone';
 
+import DiscordButton from '@/components/DiscordButton';
+
 export default function PhoneProfileScreen() {
   const router = useRouter(); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,8 +21,8 @@ export default function PhoneProfileScreen() {
   const [email, setEmail] = useState('example@gmail.com');
   const [userDetails, setUserDetails] = useState({
     title: 'Innovative Thinker at PulseZest',
-    aboutMe: 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
-    skills: ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
+    aboutMe: 'write your own words Zest ⭐.......',
+    skills: [ 'Problem Solving', 'Web Development', 'Enter your Own ✏️....'],
     profilePhoto: 'https://via.placeholder.com/200',
     recentActivity: []
   });
@@ -248,6 +250,9 @@ export default function PhoneProfileScreen() {
           <h1 className="mt-4 text-2xl font-bold text-blue-600">{username}</h1>
           <p className="text-gray-600">{userDetails.title}</p>
         </header>
+        <div className="flex justify-center">
+  <DiscordButton />
+</div>
 
         <section className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="mb-4">
@@ -319,6 +324,7 @@ export default function PhoneProfileScreen() {
           </div>
         </section>
 
+       
         {isEditing && (
           <div className="bg-white rounded-lg shadow p-4 mb-6">
             <h2 className="text-xl font-semibold text-blue-600 mb-4">Change Profile Photo</h2>

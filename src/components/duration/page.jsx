@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { db, auth } from '../../utils/Firebase/firebaseConfig';
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-export default function Courses() {
-  const [courses, setCourses] = useState([]);
+export default function Duration({ courseId }) {
+  const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
 
@@ -16,7 +16,6 @@ export default function Courses() {
       if (user) {
         setUserId(user.uid); // Set the user ID
       } else {
-        // Handle the case where the user is not logged in
         console.log("User is not logged in");
       }
     });
@@ -25,83 +24,95 @@ export default function Courses() {
   }, []);
 
   useEffect(() => {
-    if (!userId) return; // Wait until we have the userId
+    if (!userId || !courseId) return; // Wait until we have the userId and courseId
 
-    async function fetchCourses() {
+    async function fetchCourse() {
       try {
-        const coursesRef = collection(db, `users/${userId}/courses`);
-        const querySnapshot = await getDocs(coursesRef);
+        // Fetch enrollDate from the user's course document
+        const enrollRef = doc(db, `users/${userId}/courses/${courseId}`);
+        const enrollDoc = await getDoc(enrollRef);
 
-        const fetchedCourses = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
+        if (enrollDoc.exists()) {
+          const enrollData = enrollDoc.data();
           
           // Handle enrollDate as a Timestamp or a string
           let enrollDate = null;
-          if (data.enrollDate) {
-            if (data.enrollDate.toDate) {
-              // If enrollDate is a Firestore Timestamp
-              enrollDate = data.enrollDate.toDate();
-            } else if (typeof data.enrollDate === 'string') {
-              // If enrollDate is a date string
-              enrollDate = new Date(data.enrollDate);
+          if (enrollData.enrollDate) {
+            if (enrollData.enrollDate.toDate) {
+              enrollDate = enrollData.enrollDate.toDate();
+            } else if (typeof enrollData.enrollDate === 'string') {
+              enrollDate = new Date(enrollData.enrollDate);
             } else {
-              console.error(`Invalid enrollDate type for course ${doc.id}`);
-              return; // Skip this course if enrollDate is invalid
+              console.error(`Invalid enrollDate type for course ${courseId}`);
+              return;
             }
           } else {
-            console.error(`Missing enrollDate for course ${doc.id}`);
-            return; // Skip this course if enrollDate is missing
+            console.error(`Missing enrollDate for course ${courseId}`);
+            return;
           }
 
-          // Calculate the end date (3 months from enroll date)
-          const endDate = new Date(enrollDate);
-          endDate.setMonth(endDate.getMonth() + 3);
-          
-          // Calculate the remaining days
-          const currentDate = new Date();
-          const remainingDays = Math.max(Math.floor((endDate - currentDate) / (1000 * 60 * 60 * 24)), 0);
+          // Fetch courseDuration from the courses collection
+          const courseRef = doc(db, `courses/${courseId}`);
+          const courseDoc = await getDoc(courseRef);
 
-          fetchedCourses.push({
-            ...data,
-            enrollDate, // Store as Date object for display
-            endDate, // Store as Date object for display
-            remainingDays,
-            courseId: doc.id
-          });
-        });
+          if (courseDoc.exists()) {
+            const courseData = courseDoc.data();
+            const durationMonths = courseData.courseDuration ; // Default to 3 months if not provided
+            
+            // Calculate the end date based on the duration
+            const endDate = new Date(enrollDate);
+            endDate.setMonth(endDate.getMonth() + durationMonths);
 
-        setCourses(fetchedCourses);
+            // Calculate the remaining days
+            const currentDate = new Date();
+            const remainingDays = Math.max(Math.floor((endDate - currentDate) / (1000 * 60 * 60 * 24)), 0);
+
+            // Log details to console
+            console.log(`Enroll Date: ${enrollDate.toISOString()}`);
+            console.log(`Course Duration (months): ${durationMonths}`);
+            console.log(`End Date: ${endDate.toISOString()}`);
+            console.log(`Remaining Days: ${remainingDays}`);
+
+            if (remainingDays === 0) {
+              // Delete the course from the Firestore
+              await deleteDoc(enrollRef);
+              console.log(`Course ${courseId} deleted as remaining days are zero.`);
+              setCourse(null); // Set course to null after deletion
+            } else {
+              setCourse({
+                ...enrollData,
+                enrollDate,
+                endDate,
+                remainingDays,
+                courseId
+              });
+            }
+          } else {
+            console.error(`No course document found for course ${courseId}`);
+          }
+        } else {
+          console.error(`No enroll document found for course ${courseId}`);
+        }
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching course:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCourses();
-  }, [userId]);
+    fetchCourse();
+  }, [userId, courseId]);
 
-  if (loading) return <p>Loading courses...</p>;
+  if (loading) return <p>Loading course details...</p>;
+
+  if (!course) return <p>No course found or course has been deleted.</p>;
 
   return (
-    <div>
-      {courses.length > 0 ? (
-        <ul>
-          {courses.map((course) => (
-            <li key={course.courseId} className="mb-4">
-              <div className="flex items-center">
-                <p className="text-lg font-semibold text-gray-800 mr-2">Remaining Days:</p>
-                <span className={`text-lg font-bold text-white px-3 py-1 rounded-full ${course.remainingDays > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
-                  {course.remainingDays} days
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-center text-gray-500">No courses found.</p>
-      )}
+    <div className="flex items-center">
+      <p className="text-lg font-semibold text-gray-800 mr-2">Remaining Days:</p>
+      <span className={`text-lg font-bold text-white px-3 py-1 rounded-full ${course.remainingDays > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+        {course.remainingDays} days
+      </span>
     </div>
   );
 }

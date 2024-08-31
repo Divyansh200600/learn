@@ -301,7 +301,7 @@ const VideoSelector = () => {
                   
                   
                 </div>
-                <Duration />
+                <Duration courseId={courseId} />
                 <div className="flex flex-col space-y-4  pb-[calc(60px+1rem)]" >
                     {selectedCourse.chapters.map((chapter) => (
                         <div key={chapter.id} className={`bg-white p-4 rounded-lg shadow-lg ${isChapterCompleted(chapter) ? 'border-4 border-green-500' : 'border-4 border-yellow-500'}`}>

@@ -7,6 +7,8 @@ import { CircularProgress, LinearProgress, Accordion, AccordionSummary, Accordio
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { BellIcon } from '@heroicons/react/outline';
+
 import { Pie, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -17,6 +19,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import Notifications from '@/app/dashboard/notification/notifications';
 
 // Registering necessary Chart.js components
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -28,6 +31,7 @@ export default function PhoneMyStatsPage() {
   const [videoProgress, setVideoProgress] = useState({});
   const [totalCourseProgress, setTotalCourseProgress] = useState(0);
   const [showChartView, setShowChartView] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -65,6 +69,11 @@ export default function PhoneMyStatsPage() {
 
     fetchUserData();
   }, []);
+
+  const handleBellClick = () => {
+    setShowNotifications(!showNotifications);
+  };
+
 
   const handleCourseSelection = async (e) => {
     const courseId = e.target.value;
@@ -217,8 +226,15 @@ const renderCharts = () => {
 
 return (
   <div className="p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 min-h-screen pb-[calc(60px+1rem)]">
+        <header className="flex justify-between items-center p-4 bg-white shadow">
+        <h1 className="text-2xl font-bold text-blue-600">My Stats</h1>
+        <button onClick={handleBellClick} className="focus:outline-none">
+          <BellIcon className="w-6 h-6 text-blue-600" />
+        </button>
+      </header>
+      
       <Card className="mb-4">
-          <CardHeader title="My Stats Page" className="text-xl font-bold text-gray-800" />
+        
           <CardContent>
               <div className="mb-4">
                   <label htmlFor="courseSelector" className="block mb-2 text-sm font-medium text-gray-700">Select a Course:</label>
@@ -303,6 +319,12 @@ return (
               </CardContent>
           </Card>
       )}
+
+<Notifications
+        showNotifications={showNotifications}
+        setShowNotifications={setShowNotifications}
+       
+      />
   </div>
 );
 }

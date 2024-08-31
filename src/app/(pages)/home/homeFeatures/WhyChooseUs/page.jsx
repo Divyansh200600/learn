@@ -8,7 +8,7 @@ import animationData from "./ani.json"; // Import your Lottie animation JSON fil
 const WhyChooseUs = () => {
   const [currentVideo, setCurrentVideo] = useState({
     title: "Rishab Chauhan",
-    by: "Position: CO-Founder",
+    by: "Position: Founder",
     src:
       "https://firebasestorage.googleapis.com/v0/b/pulsezest.appspot.com/o/Firebase%2FFirebase%20Connection%20with%20Flutter.mp4?alt=media&token=0bd21013-6eee-4674-8967-e56fa6ad0609",
   });

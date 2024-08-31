@@ -4,7 +4,7 @@ import Footer from '@/components/footer/page';
 const PrivacyPolicy = () => {
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-8  pb-[calc(60px+1rem)]">
         <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
         <p className="text-sm text-gray-500 mb-8">Last updated: August 08, 2024</p>
         <p className="mb-4">

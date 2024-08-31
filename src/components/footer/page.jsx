@@ -82,7 +82,7 @@ const Footer = () => {
   };
 
   return (
-    <footer style={footerStyle}>
+    <footer style={footerStyle} className="hidden sm:block">
       <div style={containerStyle}>
         <div className="footer-content" style={footerContentStyle}>
           <div style={sectionStyle}>

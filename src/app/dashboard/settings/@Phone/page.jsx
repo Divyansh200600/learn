@@ -34,19 +34,19 @@ export default function SettingsPhonePage() {
           <h2 className="text-xl font-medium mb-2">Account Settings</h2>
           <PassChanger />
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        {/* <div className="bg-white p-4 rounded shadow">
           <h2 className="text-xl font-medium mb-2">Notifications</h2>
           <label className="flex items-center space-x-3">
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
             <span className="text-gray-700">Enable notifications</span>
           </label>
-        </div>
+        </div> */}
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-xl font-medium mb-2">Support</h2>
           <p className="text-gray-700 mb-2">For any issues or feedback, contact our support team.</p>
-          <a href="mailto:support@pulsezest.com" className="text-blue-500 hover:underline">Email Support</a>
+          <a href="mailto:pulsezest-learning-management@pulsezest.com" className="text-blue-500 hover:underline">Email Support</a>
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        {/* <div className="bg-white p-4 rounded shadow">
           <h2 className="text-xl font-medium mb-2">Privacy Settings</h2>
           <label className="flex items-center space-x-3">
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
@@ -56,13 +56,30 @@ export default function SettingsPhonePage() {
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
             <span className="text-gray-700">Allow data sharing with partners</span>
           </label>
-        </div>
+        </div> */}
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-xl font-medium mb-2">About Us & Privacy Policy</h2>
           <p className="text-gray-700 mb-2">
-            Learn more about our <a href="https://learning.pulsezest.com/about-us" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">About Us</a> and our <a href="https://learning.pulsezest.com/privacy-policy" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+            Learn more about our
+            <a
+              href="https://learning.pulsezest.com/about-us"
+              className="text-blue-500 hover:underline font-semibold mr-2"  // Styling for "About Us"
+              rel="noopener noreferrer"
+            >
+              About Us
+            </a>
+            and our
+            <a
+              href="https://learning.pulsezest.com/privacy-policy"
+              className="text-green-500 hover:underline font-semibold ml-2" // Styling for "Privacy Policy"
+              
+              rel="noopener noreferrer"
+            >
+              Privacy Policy
+            </a>.
           </p>
         </div>
+
       </div>
       <div className="pt-4 pb-8">
         <Logout />

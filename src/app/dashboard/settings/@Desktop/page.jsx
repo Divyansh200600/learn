@@ -23,19 +23,19 @@ export default function SettingsDesktopPage() {
           <h2 className="text-2xl font-medium mb-4">Account Settings</h2>
           <PassChanger />
         </div>
-        <div className="bg-white p-6 rounded shadow">
+        {/* <div className="bg-white p-6 rounded shadow">
           <h2 className="text-2xl font-medium mb-4">Notifications</h2>
           <label className="flex items-center space-x-3">
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
             <span className="text-gray-700">Enable notifications</span>
           </label>
-        </div>
+        </div> */}
         <div className="bg-white p-6 rounded shadow">
           <h2 className="text-2xl font-medium mb-4">Support</h2>
           <p className="text-gray-700 mb-4">For any issues or feedback, contact our support team.</p>
           <a href="mailto:support@pulsezest.com" className="text-blue-500 hover:underline">Email Support</a>
         </div>
-        <div className="bg-white p-6 rounded shadow">
+        {/* <div className="bg-white p-6 rounded shadow">
           <h2 className="text-2xl font-medium mb-4">Privacy Settings</h2>
           <label className="flex items-center space-x-3">
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
@@ -45,7 +45,7 @@ export default function SettingsDesktopPage() {
             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
             <span className="text-gray-700">Allow data sharing with partners</span>
           </label>
-        </div>
+        </div> */}
         <div className="bg-white p-6 rounded shadow">
           <h2 className="text-2xl font-medium mb-4">About Us & Privacy Policy</h2>
           <p className="text-gray-700 mb-4">

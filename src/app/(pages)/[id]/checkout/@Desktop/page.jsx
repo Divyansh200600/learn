@@ -205,7 +205,7 @@ const CheckoutPage = ({ params }) => {
                   Login with Google
                 </Button>
   
-                <Typography variant="subtitle1" style={{ margin: '0 10px' }}>OR</Typography>
+                {/* <Typography variant="subtitle1" style={{ margin: '0 10px' }}>OR</Typography>
   
                 <Input
                   type="text"
@@ -231,7 +231,7 @@ const CheckoutPage = ({ params }) => {
   
                 <Button variant="contained" style={{ backgroundColor: '#001d3d' }}>
                   Login with OTP
-                </Button>
+                </Button> */}
               </div>
             )}
           </>

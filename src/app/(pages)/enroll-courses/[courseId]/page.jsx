@@ -13,6 +13,9 @@ import axios from 'axios';
 import Comment from '../../../../components/comment/Comment';
 
 const VideoPlayer = () => {
+
+ 
+
   const { courseId } = useParams();
   const [course, setCourse] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -65,7 +68,7 @@ const VideoPlayer = () => {
 
     fetchChapterCompletionStatus();
   }, [userUid, courseId]);
-
+ 
 
   const handleChapterCompletion = async (chapter) => {
     if (!userUid || !courseId) return;
@@ -469,7 +472,7 @@ const VideoPlayer = () => {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold text-gray-800">{course.name}</h2>
-        <Duration />
+        <Duration courseId={courseId} />
       </div>
 
       <div className="flex space-x-6">

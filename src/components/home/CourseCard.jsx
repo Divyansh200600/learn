@@ -20,9 +20,10 @@ const CategoryCard = ({ category }) => {
                       <Image
                         src={course.thumbnail}
                         alt={`${course.name} thumbnail`}
-                        className="object-cover rounded-lg w-full h-60"
+                        className="object-cover rounded-lg w-full h-40 sm:h-60" // Adjusted height for responsiveness
                         width={500}
                         height={300}
+                        layout="responsive" // Ensures the image is responsive
                       />
                     </div>
                     <div>

@@ -7,7 +7,7 @@ const Notifications = ({ showNotifications, setShowNotifications, isSidebarOpen 
 
   const notifications = [
     
-    'Duggu ka noti',
+    'Coming Soon..........🔃',
    
   ];
 

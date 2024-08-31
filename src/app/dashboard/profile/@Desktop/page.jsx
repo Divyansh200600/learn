@@ -44,8 +44,8 @@ export default function DekstopProfileScreen() {
           // Default values for userDetails
           const userDetails = {
             title: userData.title || 'Innovative Thinker at PulseZest',
-            aboutMe: userData.aboutMe || 'Creative mind with a passion for innovation and technology. Always eager to explore new challenges and opportunities.',
-            skills: userData.skills || ['Creative Design', 'Problem Solving', 'Web Development', 'Project Management'],
+            aboutMe: 'write your own words Zest ⭐.......',
+            skills: [ 'Problem Solving', 'Web Development', 'Enter your Own ✏️....'],
             profilePhoto: userData.profilePhoto || '',
             googlePhoto: userData.googlePhoto || '',
             recentActivity: Array.isArray(userData.recentActivity) ? userData.recentActivity : [] // Ensure it's an array

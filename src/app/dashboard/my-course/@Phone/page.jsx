@@ -5,6 +5,8 @@ import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { auth, db } from '../../../../utils/Firebase/firebaseConfig';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Notifications from '@/app/dashboard/notification/notifications';
+import { BellIcon } from '@heroicons/react/outline';
 
 const MyCourses = () => {
     const router = useRouter();
@@ -13,6 +15,7 @@ const MyCourses = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userUid, setUserUid] = useState(null);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     useEffect(() => {
         const getUserUid = () => {
@@ -46,6 +49,11 @@ const MyCourses = () => {
         };
         fetchCategories();
     }, []);
+
+    const handleBellClick = () => {
+        setShowNotifications(!showNotifications);
+      };
+    
 
     const fetchUserCourses = async (uid) => {
         try {
@@ -147,6 +155,9 @@ const MyCourses = () => {
         <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800">
             <header className="flex justify-between items-center p-4 bg-white shadow">
                 <h1 className="text-2xl font-bold text-blue-600">My Courses</h1>
+                <button onClick={handleBellClick} className="focus:outline-none">
+          <BellIcon className="w-6 h-6 text-blue-600" />
+        </button>
             </header>
             <main className="p-4 pb-[calc(60px+1rem)]">
                 {courses.length === 0 ? (
@@ -202,6 +213,11 @@ const MyCourses = () => {
                     })
                 )}
             </main>
+            <Notifications
+        showNotifications={showNotifications}
+        setShowNotifications={setShowNotifications}
+       
+      />
         </div>
     );
 };
