@@ -1,17 +1,14 @@
-'use client'
+'use client';
 import CategoryCard from '@/components/home/CourseCard';
 import { BellIcon } from '@heroicons/react/outline';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Drawer, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { fetchCategories } from '../functions/fetchCourse'; // Adjust import path as per your project structure
+import Notifications from '@/app/dashboard/notification/notifications';
 
 export default function PhoneHomescreen() {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false); // State to control the notification drawer
-  const router = useRouter();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const getCategories = async () => {
@@ -28,19 +25,16 @@ export default function PhoneHomescreen() {
     getCategories();
   }, []);
 
-  const handleNotificationClick = () => {
-    setShowNotifications(true); // Show the notification drawer
-  };
-
-  const handleCloseNotificationDrawer = () => {
-    setShowNotifications(false); // Close the notification drawer
+  // Function to handle bell icon click
+  const handleBellClick = () => {
+    setShowNotifications(!showNotifications);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 text-gray-800 pb-[calc(60px+1rem)]">
       <header className="flex justify-between items-center p-4 bg-white shadow">
         <h1 className="text-2xl font-bold text-blue-600">PulseZest Learning</h1>
-        <button onClick={handleNotificationClick} className="focus:outline-none">
+        <button onClick={handleBellClick} className="focus:outline-none">
           <BellIcon className="w-6 h-6 text-blue-600" />
         </button>
       </header>
@@ -56,28 +50,11 @@ export default function PhoneHomescreen() {
         </section>
       </main>
 
-      {/* Notification Drawer */}
-      <Drawer
-        anchor="right"
-        open={showNotifications}
-        onClose={handleCloseNotificationDrawer}
-      >
-        <div className="w-80 p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Notifications</h3>
-            <IconButton onClick={handleCloseNotificationDrawer}>
-              <CloseIcon />
-            </IconButton>
-          </div>
-          {/* Add notification content here */}
-          <ul className="space-y-2">
-            {/* Example notifications; replace with your dynamic data */}
-            <li className="p-2 hover:bg-gray-200 rounded-lg cursor-pointer">Notification 1</li>
-            <li className="p-2 hover:bg-gray-200 rounded-lg cursor-pointer">Notification 2</li>
-            <li className="p-2 hover:bg-gray-200 rounded-lg cursor-pointer">Notification 3</li>
-          </ul>
-        </div>
-      </Drawer>
+      <Notifications
+        showNotifications={showNotifications}
+        setShowNotifications={setShowNotifications}
+       
+      />
     </div>
   );
 }

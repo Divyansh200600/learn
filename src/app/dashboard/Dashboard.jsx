@@ -9,7 +9,6 @@ import { IoChatbubblesOutline } from "react-icons/io5"; // Added FaAward for Ach
 import { auth, db } from '../../utils/Firebase/firebaseConfig';
 import Header from './Header';
 import DesktopMyCourses from './my-course/@Desktop/page';
-import NotificationDesktopScreen from './notification/layout';
 import DekstopProfileScreen from './profile/@Desktop/page';
 import SettignDesktopPage from './settings/@Desktop/page';
 import PZhallOfFame from './pz-hall-of-fame/@Desktop/page'; 
@@ -63,7 +62,6 @@ const Dashboard = () => {
     // Update the activeTab based on the pathname
     const path = window.location.pathname;
     if (path.includes('my-course')) setActiveTab('my-course');
-    if (path.includes('notifications')) setActiveTab('notifications');
     if (path.includes('profile')) setActiveTab('Profile');
     if (path.includes('settings')) setActiveTab('settings');
     if (path.includes('doubt-solving')) setActiveTab('doubt-solving');
@@ -94,8 +92,7 @@ const Dashboard = () => {
     switch (activeTab) {
       case 'my-course':
         return <DesktopMyCourses />;
-      case 'notifications':
-        return <NotificationDesktopScreen />;
+      
       case 'Profile':
         return <DekstopProfileScreen />;
       case 'settings':
