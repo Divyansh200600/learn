@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../../utils/Firebase/firebaseConfig';
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { differenceInDays, addMonths, format } from 'date-fns'; // Importing date-fns for date manipulation and formatting
 
 export default function Duration({ courseId }) {
   const [course, setCourse] = useState(null);
@@ -32,66 +33,92 @@ export default function Duration({ courseId }) {
         const enrollRef = doc(db, `users/${userId}/courses/${courseId}`);
         const enrollDoc = await getDoc(enrollRef);
 
-        if (enrollDoc.exists()) {
-          const enrollData = enrollDoc.data();
-          
-          // Handle enrollDate as a Timestamp or a string
-          let enrollDate = null;
-          if (enrollData.enrollDate) {
-            if (enrollData.enrollDate.toDate) {
-              enrollDate = enrollData.enrollDate.toDate();
-            } else if (typeof enrollData.enrollDate === 'string') {
-              enrollDate = new Date(enrollData.enrollDate);
-            } else {
-              console.error(`Invalid enrollDate type for course ${courseId}`);
-              return;
-            }
+        if (!enrollDoc.exists()) {
+          console.error(`No enroll document found for course ${courseId}`);
+          return;
+        }
+
+        const enrollData = enrollDoc.data();
+
+        // Handle enrollDate as a Timestamp or a string
+        let enrollDate = null;
+        if (enrollData.enrollDate) {
+          if (enrollData.enrollDate.toDate) {
+            enrollDate = enrollData.enrollDate.toDate();
+          } else if (typeof enrollData.enrollDate === 'string') {
+            enrollDate = new Date(enrollData.enrollDate);
           } else {
-            console.error(`Missing enrollDate for course ${courseId}`);
+            console.error(`Invalid enrollDate type for course ${courseId}`);
             return;
           }
-
-          // Fetch courseDuration from the courses collection
-          const courseRef = doc(db, `courses/${courseId}`);
-          const courseDoc = await getDoc(courseRef);
-
-          if (courseDoc.exists()) {
-            const courseData = courseDoc.data();
-            const durationMonths = courseData.courseDuration ; // Default to 3 months if not provided
-            
-            // Calculate the end date based on the duration
-            const endDate = new Date(enrollDate);
-            endDate.setMonth(endDate.getMonth() + durationMonths);
-
-            // Calculate the remaining days
-            const currentDate = new Date();
-            const remainingDays = Math.max(Math.floor((endDate - currentDate) / (1000 * 60 * 60 * 24)), 0);
-
-            // Log details to console
-            console.log(`Enroll Date: ${enrollDate.toISOString()}`);
-            console.log(`Course Duration (months): ${durationMonths}`);
-            console.log(`End Date: ${endDate.toISOString()}`);
-            console.log(`Remaining Days: ${remainingDays}`);
-
-            if (remainingDays === 0) {
-              // Delete the course from the Firestore
-              await deleteDoc(enrollRef);
-              console.log(`Course ${courseId} deleted as remaining days are zero.`);
-              setCourse(null); // Set course to null after deletion
-            } else {
-              setCourse({
-                ...enrollData,
-                enrollDate,
-                endDate,
-                remainingDays,
-                courseId
-              });
-            }
-          } else {
-            console.error(`No course document found for course ${courseId}`);
-          }
         } else {
-          console.error(`No enroll document found for course ${courseId}`);
+          console.error(`Missing enrollDate for course ${courseId}`);
+          return;
+        }
+
+        // Check if enrollDate is valid
+        if (isNaN(enrollDate.getTime())) {
+          console.error(`Invalid enrollDate value for course ${courseId}`);
+          return;
+        }
+
+        // Fetch courseDuration from the courses collection
+        const courseRef = doc(db, `courses/${courseId}`);
+        const courseDoc = await getDoc(courseRef);
+
+        if (!courseDoc.exists()) {
+          console.error(`No course document found for course ${courseId}`);
+          return;
+        }
+
+        const courseData = courseDoc.data();
+        let durationMonths = courseData.courseDuration;
+
+        // Check if courseDuration is a string that needs to be parsed
+        if (typeof durationMonths === 'string') {
+          const match = durationMonths.match(/(\d+)/);
+          if (match) {
+            durationMonths = parseInt(match[0], 10);
+          } else {
+            console.error(`Invalid courseDuration string for course ${courseId}: ${durationMonths}`);
+            return;
+          }
+        }
+
+        // Check if courseDuration is valid
+        if (isNaN(durationMonths) || durationMonths <= 0) {
+          console.error(`Invalid courseDuration value for course ${courseId}: ${durationMonths}`);
+          return;
+        }
+
+        // Calculate the end date based on the duration
+        const endDate = addMonths(enrollDate, durationMonths);
+
+        // Check if endDate is valid
+        if (isNaN(endDate.getTime())) {
+          console.error(`Invalid endDate value for course ${courseId}: ${endDate}`);
+          return;
+        }
+
+        // Calculate the remaining days
+        const currentDate = new Date();
+        const remainingDays = differenceInDays(endDate, currentDate);
+
+       
+
+        if (remainingDays <= 0) {
+          // Delete the course from Firestore if remaining days are zero or negative
+          await deleteDoc(enrollRef);
+          console.log(`Course ${courseId} deleted as remaining days are zero or negative.`);
+          setCourse(null); // Reset the course state after deletion
+        } else {
+          setCourse({
+            ...enrollData,
+            enrollDate,
+            endDate,
+            remainingDays,
+            courseId
+          });
         }
       } catch (error) {
         console.error("Error fetching course:", error);
