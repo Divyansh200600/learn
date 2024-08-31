@@ -1,6 +1,6 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Container, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
@@ -33,6 +33,12 @@ const LoginPage = ({ onLogin }) => {
   };
 
   const handleSignup = async () => {
+    const passwordValidation = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!password.match(passwordValidation)) {
+      toast.error('Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a number, and a special character');
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -52,6 +58,20 @@ const LoginPage = ({ onLogin }) => {
     } catch (error) {
       console.error('Error signing up:', error);
       toast.error('Signup failed');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success('Password reset email sent');
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      toast.error('Error sending password reset email');
     }
   };
 
@@ -158,6 +178,15 @@ const LoginPage = ({ onLogin }) => {
         >
           {signupMode ? 'Already have an account? Login here' : "Don't have an account? Sign Up"}
         </Typography>
+        {!signupMode && (
+          <Typography
+            variant="body1"
+            style={{ color: '#38a169', cursor: 'pointer', marginTop: '0.5rem', textAlign: 'center' }}
+            onClick={handleForgotPassword}
+          >
+            Forgot Password?
+          </Typography>
+        )}
       </div>
       <ToastContainer position="bottom-right" autoClose={3000} />
     </Container>

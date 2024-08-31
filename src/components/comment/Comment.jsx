@@ -278,6 +278,10 @@ const Comment = ({ courseId = '', chapterName = '', topicName = '', videoId = ''
         }
     };
 
+    const firestoreDeleteDoc = async (docRef) => {
+        return await deleteDoc(docRef);
+    };
+
     const handleLike = async (commentId) => {
         const user = auth.currentUser;
         if (user) {
